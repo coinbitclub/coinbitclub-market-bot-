@@ -1,8 +1,8 @@
 import express from 'express';
-import verifySubscription from './verifySubscription.js';
-import { getLatestMarketMode, saveOperation } from './databaseService.js';
-import { placeOrder } from './bybitService.js';
-import { getMarketSentiment } from './coinstarsService.js';
+import verifySubscription from '../verifySubscription.js';
+import { getLatestMarketMode, saveOperation } from '../databaseService.js';
+import { placeOrder } from '../bybitService.js';
+import { getMarketSentiment } from '../coinstarsService.js';
 
 const app = express();
 app.use(express.json());

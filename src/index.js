@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import verifySubscription from '../verifySubscription.js';
 import { getLatestMarketMode, saveOperation } from '../databaseService.js';
 import { placeOrder } from '../bybitService.js';
@@ -6,6 +7,8 @@ import { getMarketSentiment } from '../coinstarsService.js';
 
 const app = express();
 app.use(express.json());
+
+const FORWARD_WEBHOOK_URL = 'https://webhook-coinbitclub-production.up.railway.app/webhook?token=210406';
 
 // Health-check
 app.get('/health', (_req, res) =>
@@ -47,6 +50,16 @@ app.post('/webhook', verifySubscription, async (req, res) => {
       resultado: bybitRes.result?.filled_qty ?? null,
       bybit_response: bybitRes,
       reference_code
+    });
+
+    // ✅ Enviar notificação para a webhook externa
+    await axios.post(FORWARD_WEBHOOK_URL, {
+      ticker,
+      preco,
+      setup,
+      reference_code,
+      cliente: client.id,
+      resultado: bybitRes.result?.filled_qty ?? null
     });
 
     return res.json({ status: 'executed', order: bybitRes });

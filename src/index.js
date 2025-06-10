@@ -4,13 +4,15 @@ import cors from "cors";
 import pkg from "pg";
 const { Pool } = pkg;
 import crypto from "crypto";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 const SECRET = process.env.WEBHOOK_SECRET || "210406";
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "sua_chave_aes_32caracteres"; // Troque por uma chave forte
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "sua_chave_aes_32caracteres";
 const IV_LENGTH = 16;
 
 const pool = new Pool({
@@ -61,7 +63,7 @@ app.post("/webhook", async (req, res) => {
   try {
     await pool.query(
       "INSERT INTO signals (raw_payload) VALUES ($1)",
-      [req.body]
+      [JSON.stringify(req.body)] // Armazena o JSON corretamente!
     );
     res.status(200).send("Signal received!");
   } catch (error) {

@@ -5,34 +5,25 @@ import cron from "node-cron";
 import dotenv from "dotenv";
 dotenv.config();
 
-// --- Variáveis de ambiente ---
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const DATABASE_URL = process.env.DATABASE_URL;
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER;
 const ZAPI_INSTANCE_URL = process.env.ZAPI_INSTANCE_URL;
 const ZAPI_TOKEN = process.env.ZAPI_TOKEN;
 
-// --- Conexão com o banco ---
 const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// --- Cliente OpenAI ---
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-// --- Envia mensagem pelo WhatsApp via Z-API ---
 async function enviarWhatsappZapi(numero, mensagem) {
   const url = `${ZAPI_INSTANCE_URL}/send-message`;
   try {
     const { data } = await axios.post(
       url,
-      {
-        phone: numero,
-        message: mensagem
-      },
+      { phone: numero, message: mensagem },
       {
         headers: {
           "Content-Type": "application/json",
@@ -48,19 +39,11 @@ async function enviarWhatsappZapi(numero, mensagem) {
   }
 }
 
-// --- Função principal: monitoramento + IA ---
 async function monitorarOrdensEExecutarIA() {
   try {
-    // Busca ordens abertas
     const { rows: ordens } = await pool.query("SELECT * FROM orders WHERE status='aberta'");
-    // Contexto fictício (pode enriquecer depois)
-    const contextoMercado = {
-      sinais: [],
-      baleias: [],
-      noticias: [],
-    };
+    const contextoMercado = { sinais: [], baleias: [], noticias: [] };
 
-    // Monta prompt para IA
     const messages = [
       {
         role: "system",
@@ -75,7 +58,6 @@ async function monitorarOrdensEExecutarIA() {
       }
     ];
 
-    // Consulta IA
     const resposta = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages,
@@ -84,10 +66,8 @@ async function monitorarOrdensEExecutarIA() {
     const analise = resposta.choices[0].message.content;
     console.log("Análise da IA:", analise);
 
-    // Alerta WhatsApp
     await enviarWhatsappZapi(WHATSAPP_NUMBER, "🚨 Análise IA CoinBitClub:\n\n" + analise);
 
-    // Log de auditoria
     await pool.query(
       `INSERT INTO audit_logs (evento, detalhes, status, payload)
        VALUES ($1, $2, $3, $4)`,
@@ -110,7 +90,6 @@ async function monitorarOrdensEExecutarIA() {
   }
 }
 
-// --- Relatório diário ---
 async function enviarRelatorioDiario() {
   try {
     const { rows: ordensFechadas } = await pool.query("SELECT * FROM orders WHERE status='fechada' AND fechada_em > NOW() - INTERVAL '1 day'");
@@ -122,9 +101,8 @@ async function enviarRelatorioDiario() {
   }
 }
 
-// --- Agendamentos ---
 // IA a cada 4h
-cron.schedule("0 */4 * * *", monitorarOrdensEExecutarIA); // a cada 4 horas, minuto zero
+cron.schedule("0 */4 * * *", monitorarOrdensEExecutarIA);
 // Relatório diário às 8h
 cron.schedule("0 8 * * *", enviarRelatorioDiario);
 

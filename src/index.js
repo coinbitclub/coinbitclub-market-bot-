@@ -1,8 +1,9 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { Pool } = require("pg");
-const crypto = require("crypto");
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import pkg from "pg";
+const { Pool } = pkg;
+import crypto from "crypto";
 
 const app = express();
 app.use(cors());

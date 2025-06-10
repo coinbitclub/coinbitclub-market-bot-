@@ -1,5 +1,5 @@
 {
-  "name": "coinbitclub-bot",
+  "name": "market-bot",
   "version": "1.0.0",
   "type": "module",
   "main": "src/index.js",

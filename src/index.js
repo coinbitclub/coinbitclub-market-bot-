@@ -1,7 +1,8 @@
-// src/index.js
-require('dotenv').config();
-const express = require('express');
-const { Pool } = require('pg');
+import 'dotenv/config'; // Importação direta
+import express from 'express';
+import pkg from 'pg';
+const { Pool } = pkg;
+
 const app = express();
 
 app.use(express.json());

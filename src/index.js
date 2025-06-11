@@ -5,11 +5,9 @@ const app = express();
 app.use(express.json());
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-// Segurança básica do webhook
 const SECRET = process.env.WEBHOOK_SECRET;
 
-// 1. Recebe sinais das moedas (setup do TradingView)
+// Webhook para sinais de moedas/setup
 app.post('/webhook/signal', async (req, res) => {
     if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
     try {
@@ -24,7 +22,7 @@ app.post('/webhook/signal', async (req, res) => {
     }
 });
 
-// 2. Recebe sinais de dominância BTC.D
+// Webhook para sinais de dominância BTC.D
 app.post('/webhook/dominance', async (req, res) => {
     if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
     try {

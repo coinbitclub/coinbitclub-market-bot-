@@ -1,5 +1,6 @@
 import express from 'express';
 import { Pool } from 'pg';
+import cron from 'node-cron';
 import { getFearGreedIndexAndSave, getBTCDominanceAndSave } from './coinstarsService.js';
 
 const app = express();
@@ -38,16 +39,37 @@ app.post('/webhook/dominance', async (req, res) => {
     }
 });
 
-// API Fear & Greed
+// Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
-  const fg = await getFearGreedIndexAndSave();
-  res.json(fg);
+    try {
+        const fg = await getFearGreedIndexAndSave();
+        res.json(fg);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
-// API BTC Dominance
+// Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
-  const dominance = await getBTCDominanceAndSave();
-  res.json(dominance);
+    try {
+        const dominance = await getBTCDominanceAndSave();
+        res.json(dominance);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Agendamento automático a cada 30 minutos
+cron.schedule('*/30 * * * *', async () => {
+    try {
+        await getFearGreedIndexAndSave();
+        await getBTCDominanceAndSave();
+        console.log('CoinStats: Dados salvos automaticamente');
+    } catch (e) {
+        console.error('Erro ao salvar dados CoinStats:', e.message);
+    }
 });
 
 const PORT = process.env.PORT || 3000;

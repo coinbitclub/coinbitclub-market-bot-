@@ -1,28 +1,28 @@
-// coinstarsService.js
 import axios from 'axios';
-import { Pool } from 'pg';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const COINSTARS_API_KEY = process.env.COINSTARS_API_KEY; // coloque sua chave .env
+const COINSTATS_API_KEY = process.env.COINSTATS_API_KEY;
+const BASE_URL = "https://openapiv1.coinstats.app/insights";
 
-export async function fetchAndSaveFearGreed() {
+export async function getFearGreedIndex() {
   try {
-    const { data } = await axios.get('https://api.coinstars.com.br/api/feargreed', {
-      headers: { 'x-api-key': COINSTARS_API_KEY }
+    const res = await axios.get(`${BASE_URL}/fear-and-greed`, {
+      headers: { 'X-API-KEY': COINSTATS_API_KEY }
     });
-
-    // supondo que data.result seja o índice
-    const index = data.result?.value ?? null;
-    const timestamp = new Date();
-
-    if (index !== null) {
-      await pool.query(
-        `INSERT INTO market_mode (received_at, fear_greed) VALUES ($1, $2)`,
-        [timestamp, index]
-      );
-      console.log(`Medo & Ganância salvo: ${index}`);
-    }
+    return res.data;
   } catch (err) {
-    console.error('Erro ao buscar/salvar F&G:', err.message);
+    console.error("Erro ao buscar Fear & Greed:", err.message);
+    return null;
+  }
+}
+
+export async function getBTCDominance() {
+  try {
+    const res = await axios.get(`${BASE_URL}/btc-dominance`, {
+      headers: { 'X-API-KEY': COINSTATS_API_KEY }
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao buscar BTC Dominance:", err.message);
+    return null;
   }
 }

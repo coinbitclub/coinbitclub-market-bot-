@@ -1,5 +1,6 @@
 import express from 'express';
 import { Pool } from 'pg';
+import { getFearGreedIndex, getBTCDominance } from './coinstarsService.js';
 
 const app = express();
 app.use(express.json());
@@ -35,6 +36,15 @@ app.post('/webhook/dominance', async (req, res) => {
         console.error(err);
         res.status(500).json({ success: false, error: err.message });
     }
+});
+app.get('/api/fear-greed', async (req, res) => {
+  const fg = await getFearGreedIndex();
+  res.json(fg);
+});
+
+app.get('/api/btc-dominance', async (req, res) => {
+  const dominance = await getBTCDominance();
+  res.json(dominance);
 });
 
 const PORT = process.env.PORT || 3000;

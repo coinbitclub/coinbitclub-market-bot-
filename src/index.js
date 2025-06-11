@@ -1,6 +1,6 @@
 import express from 'express';
 import { Pool } from 'pg';
-import { getFearGreedIndex, getBTCDominance } from './coinstarsService.js';
+import { getFearGreedIndexAndSave, getBTCDominanceAndSave } from './coinstarsService.js';
 
 const app = express();
 app.use(express.json());
@@ -37,13 +37,16 @@ app.post('/webhook/dominance', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+// API Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
-  const fg = await getFearGreedIndex();
+  const fg = await getFearGreedIndexAndSave();
   res.json(fg);
 });
 
+// API BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
-  const dominance = await getBTCDominance();
+  const dominance = await getBTCDominanceAndSave();
   res.json(dominance);
 });
 

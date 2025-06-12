@@ -11,8 +11,9 @@ app.use(express.json());
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const SECRET = process.env.WEBHOOK_SECRET;
 
+// Webhook para sinais de moedas/setup
 app.post('/webhook/signal', async (req, res) => {
-    if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
+    if (req.query.token !== SECRET) return res.status(401).json({ error: "unauthorized" });
     try {
         await pool.query(
             `INSERT INTO signals (received_at, raw_payload) VALUES (NOW(), $1)`,
@@ -25,8 +26,9 @@ app.post('/webhook/signal', async (req, res) => {
     }
 });
 
+// Webhook para sinais de dominância BTC.D
 app.post('/webhook/dominance', async (req, res) => {
-    if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
+    if (req.query.token !== SECRET) return res.status(401).json({ error: "unauthorized" });
     try {
         await pool.query(
             `INSERT INTO dominance_signals (received_at, raw_payload) VALUES (NOW(), $1)`,
@@ -39,9 +41,10 @@ app.post('/webhook/dominance', async (req, res) => {
     }
 });
 
+// Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
     try {
-        const fg = await saveFearGreed(pool);
+        const fg = await saveFearGreed();
         res.json(fg);
     } catch (err) {
         console.error(err);
@@ -49,9 +52,10 @@ app.get('/api/fear-greed', async (req, res) => {
     }
 });
 
+// Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
     try {
-        const dominance = await saveBTCDominance(pool);
+        const dominance = await saveBTCDominance();
         res.json(dominance);
     } catch (err) {
         console.error(err);
@@ -59,10 +63,11 @@ app.get('/api/btc-dominance', async (req, res) => {
     }
 });
 
+// Agendamento automático a cada 30 minutos
 cron.schedule('*/30 * * * *', async () => {
     try {
-        await saveFearGreed(pool);
-        await saveBTCDominance(pool);
+        await saveFearGreed();
+        await saveBTCDominance();
         console.log('CoinStats: Dados salvos automaticamente');
     } catch (e) {
         console.error('Erro ao salvar dados CoinStats:', e.message);
@@ -71,3 +76,4 @@ cron.schedule('*/30 * * * *', async () => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
+

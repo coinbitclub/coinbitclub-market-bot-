@@ -1,8 +1,8 @@
-// market-bot/src/coinstarsService.js
+// market-bot/src/services/coinstarsService.js
 import axios from 'axios';
 
 const BASE_URL = 'https://openapiv1.coinstats.app/insights';
-const API_KEY  = process.env.COINSTATS_API_KEY;
+const API_KEY  = process.env.COINSTATS_API_KEY?.trim();
 
 export async function getFearGreedIndexAndSave(pool) {
   try {

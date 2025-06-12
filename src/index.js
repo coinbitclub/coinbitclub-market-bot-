@@ -1,8 +1,8 @@
 // market-bot/src/index.js
-import 'dotenv/config';            // carrega .env antes de tudo
-import express from 'express';
-import { Pool } from 'pg';
-import cron from 'node-cron';
+import 'dotenv/config';
+import express       from 'express';
+import { Pool }      from 'pg';
+import cron          from 'node-cron';
 import {
   getFearGreedIndexAndSave,
   getBTCDominanceAndSave
@@ -17,11 +17,9 @@ const PORT   = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Webhook para sinais de moedas/setup
+// 1) Webhook sinais de setup
 app.post('/webhook/signal', async (req, res) => {
-  if (req.query.token !== SECRET) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
+  if (req.query.token !== SECRET) return res.status(401).json({ error: 'unauthorized' });
   try {
     await pool.query(
       `INSERT INTO signals (received_at, raw_payload) VALUES (NOW(), $1)`,
@@ -34,11 +32,9 @@ app.post('/webhook/signal', async (req, res) => {
   }
 });
 
-// Webhook para sinais de dominância BTC.D
+// 2) Webhook dominância BTC
 app.post('/webhook/dominance', async (req, res) => {
-  if (req.query.token !== SECRET) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
+  if (req.query.token !== SECRET) return res.status(401).json({ error: 'unauthorized' });
   try {
     await pool.query(
       `INSERT INTO dominance_signals (received_at, raw_payload) VALUES (NOW(), $1)`,
@@ -51,7 +47,7 @@ app.post('/webhook/dominance', async (req, res) => {
   }
 });
 
-// Consulta manual Fear & Greed
+// 3) Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
   try {
     const data = await getFearGreedIndexAndSave(pool);
@@ -62,7 +58,7 @@ app.get('/api/fear-greed', async (req, res) => {
   }
 });
 
-// Consulta manual BTC Dominance
+// 4) Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
   try {
     const data = await getBTCDominanceAndSave(pool);
@@ -73,7 +69,7 @@ app.get('/api/btc-dominance', async (req, res) => {
   }
 });
 
-// Agendamento automático a cada 30 minutos
+// 5) Agendamento a cada 30'
 cron.schedule('*/30 * * * *', async () => {
   try {
     await getFearGreedIndexAndSave(pool);

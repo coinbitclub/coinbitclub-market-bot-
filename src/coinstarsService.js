@@ -1,41 +1,28 @@
-// market-bot/src/coinstarsService.js
-import axios from 'axios';
+import axios from 'axios'
 
-/**
- * Lê, limpa e valida COINSTATS_API_KEY,
- * faz requisição e grava no Postgres.
- */
-function getApiKey() {
-  const rawKey = process.env.COINSTATS_API_KEY ?? '';
-  const key = rawKey.replace(/(^['"]|['"]$)/g, '').trim();
-  if (!key) throw new Error('COINSTATS_API_KEY não definido ou inválido');
-  return key;
-}
+const COINSTATS_BASE = 'https://api.coinstats.app/public/v1'
+const API_KEY = process.env.COINSTATS_API_KEY.trim()
 
 export async function getFearGreedIndexAndSave(pool) {
-  const apiKey = getApiKey();
-  const { data } = await axios.get(
-    'https://openapiv1.coinstats.app/insights/fear-and-greed',
-    { headers: { 'X-API-KEY': apiKey, Accept: 'application/json' } }
-  );
+  const url = `${COINSTATS_BASE}/fear-and-greed`
+  const { data } = await axios.get(url, {
+    headers: { 'X-API-KEY': API_KEY }
+  })
+  const raw = JSON.stringify(data)
   await pool.query(
-    `INSERT INTO coinstats_fear_greed (received_at, raw_payload) VALUES (NOW(), $1)`,
-    [JSON.stringify(data)]
-  );
-  console.log('[CoinStats] Fear & Greed salvo!');
-  return data;
+    `INSERT INTO coinstats_fear_greed (raw_payload) VALUES ($1)`,
+    [raw]
+  )
 }
 
 export async function getBTCDominanceAndSave(pool) {
-  const apiKey = getApiKey();
-  const { data } = await axios.get(
-    'https://openapiv1.coinstats.app/insights/btc-dominance',
-    { headers: { 'X-API-KEY': apiKey, Accept: 'application/json' } }
-  );
+  const url = `${COINSTATS_BASE}/btc-dominance`
+  const { data } = await axios.get(url, {
+    headers: { 'X-API-KEY': API_KEY }
+  })
+  const raw = JSON.stringify(data)
   await pool.query(
-    `INSERT INTO coinstats_btc_dominance (received_at, raw_payload) VALUES (NOW(), $1)`,
-    [JSON.stringify(data)]
-  );
-  console.log('[CoinStats] BTC Dominance salvo!');
-  return data;
+    `INSERT INTO coinstats_btc_dominance (raw_payload) VALUES ($1)`,
+    [raw]
+  )
 }

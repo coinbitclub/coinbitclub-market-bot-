@@ -5,9 +5,9 @@ import cron from 'node-cron';
 import {
   getFearGreedIndexAndSave,
   getBTCDominanceAndSave
-} from './coinstarsService.js';
+} from './services/coinstarsService.js';
 
-console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY);
+console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY?.trim());
 
 const app    = express();
 const pool   = new Pool({ connectionString: process.env.DATABASE_URL });

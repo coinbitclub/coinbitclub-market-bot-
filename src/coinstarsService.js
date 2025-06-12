@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_KEY = process.env.COINSTATS_API_KEY;
 
 // Fear & Greed
-export async function getFearGreedIndexAndSave(pool) {
+export async function saveFearGreed(pool) {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
     const resp = await axios.get(url, {
@@ -25,7 +25,7 @@ export async function getFearGreedIndexAndSave(pool) {
 }
 
 // BTC Dominance
-export async function getBTCDominanceAndSave(pool) {
+export async function saveBTCDominance(pool) {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/btc-dominance';
     const resp = await axios.get(url, {

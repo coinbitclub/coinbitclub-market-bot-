@@ -1,21 +1,17 @@
-import { shouldEnterLong, shouldExitLong } from '../services/signalsService.js';
-import { placeOrder, closeOrder, fetchOpenOrders } from '../services/bybitService.js';
+import cron from 'node-cron';
+import { getLatestBTCDominance, getLatestFearGreed } from '../services/signalsService.js';
+import db from '../services/databaseService.js';
 
-cron.schedule('*/5 * * * *', async () => {
-  const marketData = await getMarketData();               // BTC.D, F&G, candles, etc.
-  const signals    = calculateSignals(marketData);        // long/short/macrosinal
-  const openOrders = await fetchOpenOrders(user);
-
-  // entrada
-  if (signals.altcoins === 'LONG' && shouldEnterLong(signals.pairData)) {
-    await placeOrder(user, { side: 'Buy', qty: …, sl: …, tp: … });
-  }
-
-  // saída
-  for (let o of openOrders) {
-    if (o.side === 'Buy' && shouldExitLong({ price: o.currentPrice, entryPrice: o.price, volatility: marketData.volatility })) {
-      await closeOrder(user, o.id);
+export default function scheduler() {
+  // rodada a cada 5 minutos
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      const fg = await getLatestFearGreed();
+      const dom = await getLatestBTCDominance();
+      console.log('Scheduler executed:', { fg: fg?.now, dom });
+      // aqui chamar funções de geração de sinais e ordens
+    } catch (err) {
+      console.error('Scheduler error', err);
     }
-    // mesma coisa para SHORT…
-  }
-});
+  });
+}

@@ -44,7 +44,7 @@ app.post('/webhook/dominance', async (req, res) => {
 // Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
     try {
-        const fg = await saveFearGreed();
+        const fg = await saveFearGreed(pool);
         res.json(fg);
     } catch (err) {
         console.error(err);
@@ -55,7 +55,7 @@ app.get('/api/fear-greed', async (req, res) => {
 // Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
     try {
-        const dominance = await saveBTCDominance();
+        const dominance = await saveBTCDominance(pool);
         res.json(dominance);
     } catch (err) {
         console.error(err);
@@ -66,8 +66,8 @@ app.get('/api/btc-dominance', async (req, res) => {
 // Agendamento automático a cada 30 minutos
 cron.schedule('*/30 * * * *', async () => {
     try {
-        await saveFearGreed();
-        await saveBTCDominance();
+        await saveFearGreed(pool);
+        await saveBTCDominance(pool);
         console.log('CoinStats: Dados salvos automaticamente');
     } catch (e) {
         console.error('Erro ao salvar dados CoinStats:', e.message);

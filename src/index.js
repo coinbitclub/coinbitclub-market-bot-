@@ -2,6 +2,7 @@ import express from 'express';
 import { Pool } from 'pg';
 import cron from 'node-cron';
 import { getFearGreedIndexAndSave, getBTCDominanceAndSave } from './coinstarsService.js';
+console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY);
 
 const app = express();
 app.use(express.json());
@@ -42,7 +43,7 @@ app.post('/webhook/dominance', async (req, res) => {
 // Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
     try {
-        const fg = await getFearGreedIndexAndSave();
+        const fg = await getFearGreedIndexAndSave(pool);  // <<<<<<<<<<< AJUSTADO
         res.json(fg);
     } catch (err) {
         console.error(err);
@@ -53,7 +54,7 @@ app.get('/api/fear-greed', async (req, res) => {
 // Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
     try {
-        const dominance = await getBTCDominanceAndSave();
+        const dominance = await getBTCDominanceAndSave(pool);  // <<<<<<<<<<< AJUSTADO
         res.json(dominance);
     } catch (err) {
         console.error(err);
@@ -64,8 +65,8 @@ app.get('/api/btc-dominance', async (req, res) => {
 // Agendamento automático a cada 30 minutos
 cron.schedule('*/30 * * * *', async () => {
     try {
-        await getFearGreedIndexAndSave();
-        await getBTCDominanceAndSave();
+        await getFearGreedIndexAndSave(pool);  // <<<<<<<<<<< AJUSTADO
+        await getBTCDominanceAndSave(pool);    // <<<<<<<<<<< AJUSTADO
         console.log('CoinStats: Dados salvos automaticamente');
     } catch (e) {
         console.error('Erro ao salvar dados CoinStats:', e.message);

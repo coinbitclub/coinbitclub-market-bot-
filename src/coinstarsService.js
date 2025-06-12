@@ -19,8 +19,10 @@ export async function saveFearGreed() {
       [JSON.stringify(resp.data)]
     );
     console.log('[CoinStats] Fear & Greed salvo!');
+    return resp.data;
   } catch (e) {
     console.error('Erro salvando Fear & Greed:', e.message);
+    return null;
   }
 }
 
@@ -39,7 +41,9 @@ export async function saveBTCDominance() {
       [JSON.stringify(resp.data)]
     );
     console.log('[CoinStats] BTC Dominance salvo!');
+    return resp.data;
   } catch (e) {
     console.error('Erro salvando BTC Dominance:', e.message);
+    return null;
   }
 }

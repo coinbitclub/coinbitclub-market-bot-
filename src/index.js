@@ -1,4 +1,5 @@
 import axios from 'axios';
+console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY);
 
 const API_KEY = process.env.COINSTATS_API_KEY;
 

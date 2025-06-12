@@ -1,78 +1,47 @@
-import express from 'express';
-import { Pool } from 'pg';
-import cron from 'node-cron';
-import { saveFearGreed, saveBTCDominance } from './coinstarsService.js';
+import axios from 'axios';
 
-console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY);
+const API_KEY = process.env.COINSTATS_API_KEY;
 
-const app = express();
-app.use(express.json());
+// Fear & Greed
+export async function saveFearGreed(pool) {
+  try {
+    const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
+    const resp = await axios.get(url, {
+      headers: {
+        'X-API-KEY': API_KEY,
+        'accept': 'application/json'
+      }
+    });
+    await pool.query(
+      `INSERT INTO coinstats_fear_greed (received_at, raw_payload) VALUES (NOW(), $1)`,
+      [JSON.stringify(resp.data)]
+    );
+    console.log('[CoinStats] Fear & Greed salvo!');
+    return resp.data;
+  } catch (e) {
+    console.error('Erro salvando Fear & Greed:', e.message);
+    return null;
+  }
+}
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const SECRET = process.env.WEBHOOK_SECRET;
-
-// Webhook para sinais de moedas/setup
-app.post('/webhook/signal', async (req, res) => {
-    if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
-    try {
-        await pool.query(
-            `INSERT INTO signals (received_at, raw_payload) VALUES (NOW(), $1)`,
-            [JSON.stringify(req.body)]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// Webhook para sinais de dominância BTC.D
-app.post('/webhook/dominance', async (req, res) => {
-    if (req.query.token !== SECRET) return res.status(401).json({error: "unauthorized"});
-    try {
-        await pool.query(
-            `INSERT INTO dominance_signals (received_at, raw_payload) VALUES (NOW(), $1)`,
-            [JSON.stringify(req.body)]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// Consulta manual Fear & Greed
-app.get('/api/fear-greed', async (req, res) => {
-    try {
-        const fg = await saveFearGreed();
-        res.json(fg);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// Consulta manual BTC Dominance
-app.get('/api/btc-dominance', async (req, res) => {
-    try {
-        const dominance = await saveBTCDominance();
-        res.json(dominance);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-// Agendamento automático a cada 30 minutos
-cron.schedule('*/30 * * * *', async () => {
-    try {
-        await saveFearGreed();
-        await saveBTCDominance();
-        console.log('CoinStats: Dados salvos automaticamente');
-    } catch (e) {
-        console.error('Erro ao salvar dados CoinStats:', e.message);
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
+// BTC Dominance
+export async function saveBTCDominance(pool) {
+  try {
+    const url = 'https://openapiv1.coinstats.app/insights/btc-dominance';
+    const resp = await axios.get(url, {
+      headers: {
+        'X-API-KEY': API_KEY,
+        'accept': 'application/json'
+      }
+    });
+    await pool.query(
+      `INSERT INTO coinstats_btc_dominance (received_at, raw_payload) VALUES (NOW(), $1)`,
+      [JSON.stringify(resp.data)]
+    );
+    console.log('[CoinStats] BTC Dominance salvo!');
+    return resp.data;
+  } catch (e) {
+    console.error('Erro salvando BTC Dominance:', e.message);
+    return null;
+  }
+}

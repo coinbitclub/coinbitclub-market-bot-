@@ -1,28 +1,17 @@
-// services/databaseService.js
-import pg from 'pg'
-import dotenv from 'dotenv'
-dotenv.config()
+import pkg from 'pg';
+const { Pool } = pkg;
+import { URL } from 'url';
 
-// Em produção no Railway/Postgres precisamos de ssl:{rejectUnauthorized:false}
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production'
-    ? { rejectUnauthorized: false }
-    : false,
-})
+// Config via DATABASE_URL
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-/**
- * Executa um SQL parametrizado e devolve o resultado.
- * @param {string} text – query SQL com placeholders $1, $2…
- * @param {any[]} params – valores para os placeholders
- * @returns {Promise<import('pg').QueryResult>}
- */
-export async function query(text, params) {
-  const client = await pool.connect()
-  try {
-    const res = await client.query(text, params)
-    return res
-  } finally {
-    client.release()
+export default {
+  async insert(table, payload) {
+    const text = `INSERT INTO ${table}(raw_payload) VALUES($1)`;
+    await pool.query(text, [payload]);
+  },
+  async query(text, params) {
+    const res = await pool.query(text, params);
+    return res.rows;
   }
-}
+};

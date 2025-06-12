@@ -1,49 +1,74 @@
-// market-bot/src/index.js
-import 'dotenv/config';
-import express from 'express';
-import { Pool } from 'pg';
-import cron from 'node-cron';
+import 'dotenv/config'
+import express from 'express'
+import { Pool } from 'pg'
+import cron from 'node-cron'
 import {
   getFearGreedIndexAndSave,
-  getBTCDominanceAndSave,
-} from './coinstarsService.js';
+  getBTCDominanceAndSave
+} from './services/coinstatsService.js'
 
-const PORT = process.env.PORT ?? 3000;
-const SECRET = process.env.WEBHOOK_SECRET;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const app = express()
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+})
+const SECRET = process.env.WEBHOOK_SECRET
+const PORT = process.env.PORT || 3000
 
-console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY);
+app.use(express.json())
 
-const app = express();
-app.use(express.json());
-
-// Exemplo de webhook (ajuste según seu uso real)
+// Webhook de sinais (exemplo)
 app.post('/webhook/signal', async (req, res) => {
   if (req.query.token !== SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: 'unauthorized' })
   }
-  // TODO: gravar payload de sinais em sua tabela
-  res.sendStatus(200);
-});
+  try {
+    // aqui você processaria o payload
+    console.log('Recebido sinal:', req.body)
+    // …gravação no banco, envio de ordens, etc.
+    res.json({ status: 'ok' })
+  } catch (err) {
+    console.error('Erro no webhook /signal:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
 
+// Webhook de dominance (exemplo)
 app.post('/webhook/dominance', async (req, res) => {
   if (req.query.token !== SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ error: 'unauthorized' })
   }
-  // TODO: gravar payload de dominance em sua tabela
-  res.sendStatus(200);
-});
+  try {
+    console.log('Recebida dominance:', req.body)
+    res.json({ status: 'ok' })
+  } catch (err) {
+    console.error('Erro no webhook /dominance:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
 
-// Cron de CoinStats a cada hora
+// Cron job: Fear & Greed a cada hora (minuto 0)
 cron.schedule('0 * * * *', async () => {
   try {
-    await getFearGreedIndexAndSave(pool);
-    await getBTCDominanceAndSave(pool);
+    await getFearGreedIndexAndSave(pool)
+    console.log('CoinStats Fear & Greed salvo!')
   } catch (err) {
-    console.error('Erro no cron CoinStats:', err.message);
+    console.error('Erro no cron CoinStats (Fear & Greed):', err.message)
   }
-});
+})
 
-app.listen(PORT, () =>
+// Cron job: BTC Dominance a cada hora
+cron.schedule('0 * * * *', async () => {
+  try {
+    await getBTCDominanceAndSave(pool)
+    console.log('CoinStats BTC Dominance salvo!')
+  } catch (err) {
+    console.error('Erro no cron CoinStats (BTC Dominance):', err.message)
+  }
+})
+
+app.listen(PORT, () => {
   console.log(`🚀 market-bot ouvindo na porta ${PORT}`)
-);
+})

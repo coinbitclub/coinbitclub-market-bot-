@@ -1,49 +1,43 @@
+// market-bot/src/coinstarsService.js
 import axios from 'axios';
-import { Pool } from 'pg';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const API_KEY = process.env.COINSTATS_API_KEY;
+const BASE_URL = 'https://openapiv1.coinstats.app/insights';
+const API_KEY  = process.env.COINSTATS_API_KEY;
 
-// Fear & Greed
-export async function saveFearGreed() {
+export async function getFearGreedIndexAndSave(pool) {
   try {
-    const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
-    const resp = await axios.get(url, {
+    const res = await axios.get(`${BASE_URL}/fear-and-greed`, {
       headers: {
         'X-API-KEY': API_KEY,
-        'accept': 'application/json'
+        'accept':    'application/json'
       }
     });
     await pool.query(
       `INSERT INTO coinstats_fear_greed (received_at, raw_payload) VALUES (NOW(), $1)`,
-      [JSON.stringify(resp.data)]
+      [JSON.stringify(res.data)]
     );
-    console.log('[CoinStats] Fear & Greed salvo!');
-    return resp.data;
-  } catch (e) {
-    console.error('Erro salvando Fear & Greed:', e.message);
-    throw e;
+    return res.data;
+  } catch (err) {
+    console.error('Erro ao buscar Fear & Greed:', err.message);
+    throw err;
   }
 }
 
-// BTC Dominance
-export async function saveBTCDominance() {
+export async function getBTCDominanceAndSave(pool) {
   try {
-    const url = 'https://openapiv1.coinstats.app/insights/btc-dominance';
-    const resp = await axios.get(url, {
+    const res = await axios.get(`${BASE_URL}/btc-dominance`, {
       headers: {
         'X-API-KEY': API_KEY,
-        'accept': 'application/json'
+        'accept':    'application/json'
       }
     });
     await pool.query(
       `INSERT INTO coinstats_btc_dominance (received_at, raw_payload) VALUES (NOW(), $1)`,
-      [JSON.stringify(resp.data)]
+      [JSON.stringify(res.data)]
     );
-    console.log('[CoinStats] BTC Dominance salvo!');
-    return resp.data;
-  } catch (e) {
-    console.error('Erro salvando BTC Dominance:', e.message);
-    throw e;
+    return res.data;
+  } catch (err) {
+    console.error('Erro ao buscar BTC Dominance:', err.message);
+    throw err;
   }
 }

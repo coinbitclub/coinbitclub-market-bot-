@@ -1,12 +1,12 @@
 // market-bot/src/index.js
-import 'dotenv/config';               // carrega as variáveis de ambiente
+import 'dotenv/config';            // carrega .env antes de tudo
 import express from 'express';
 import { Pool } from 'pg';
 import cron from 'node-cron';
 import {
   getFearGreedIndexAndSave,
   getBTCDominanceAndSave
-} from './services/coinstarsService.js';
+} from './coinstarsService.js';
 
 console.log('[ENV] COINSTATS_API_KEY:', process.env.COINSTATS_API_KEY?.trim());
 
@@ -17,7 +17,7 @@ const PORT   = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// 1) Webhook para sinais de moedas/setup
+// Webhook para sinais de moedas/setup
 app.post('/webhook/signal', async (req, res) => {
   if (req.query.token !== SECRET) {
     return res.status(401).json({ error: 'unauthorized' });
@@ -34,7 +34,7 @@ app.post('/webhook/signal', async (req, res) => {
   }
 });
 
-// 2) Webhook para sinais de dominância BTC.D
+// Webhook para sinais de dominância BTC.D
 app.post('/webhook/dominance', async (req, res) => {
   if (req.query.token !== SECRET) {
     return res.status(401).json({ error: 'unauthorized' });
@@ -51,7 +51,7 @@ app.post('/webhook/dominance', async (req, res) => {
   }
 });
 
-// 3) Consulta manual Fear & Greed
+// Consulta manual Fear & Greed
 app.get('/api/fear-greed', async (req, res) => {
   try {
     const data = await getFearGreedIndexAndSave(pool);
@@ -62,7 +62,7 @@ app.get('/api/fear-greed', async (req, res) => {
   }
 });
 
-// 4) Consulta manual BTC Dominance
+// Consulta manual BTC Dominance
 app.get('/api/btc-dominance', async (req, res) => {
   try {
     const data = await getBTCDominanceAndSave(pool);
@@ -73,7 +73,7 @@ app.get('/api/btc-dominance', async (req, res) => {
   }
 });
 
-// 5) Agendamento automático a cada 30 minutos
+// Agendamento automático a cada 30 minutos
 cron.schedule('*/30 * * * *', async () => {
   try {
     await getFearGreedIndexAndSave(pool);
@@ -84,4 +84,6 @@ cron.schedule('*/30 * * * *', async () => {
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 market-bot rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 market-bot rodando na porta ${PORT}`);
+});

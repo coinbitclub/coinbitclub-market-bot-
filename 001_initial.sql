@@ -1,34 +1,58 @@
--- clients
-CREATE TABLE IF NOT EXISTS clients (
-  id                 SERIAL PRIMARY KEY,
-  softr_client_id    TEXT UNIQUE NOT NULL,
-  bybit_api_key      TEXT NOT NULL,
-  bybit_api_secret   TEXT NOT NULL,
-  leverage           INT NOT NULL,
-  order_value        NUMERIC NOT NULL,
-  plan_name          TEXT NOT NULL,
-  subscription_start TIMESTAMPTZ NOT NULL,
-  subscription_end   TIMESTAMPTZ NOT NULL,
-  created_at         TIMESTAMPTZ DEFAULT now()
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+  user_id SERIAL PRIMARY KEY,
+  nome VARCHAR(100),
+  email VARCHAR(100) UNIQUE,
+  assinatura_status VARCHAR(20) DEFAULT 'ativo',
+  assinatura_data_inicio TIMESTAMP,
+  assinatura_data_fim TIMESTAMP
 );
 
--- operations
-CREATE TABLE IF NOT EXISTS operations (
-  id             SERIAL PRIMARY KEY,
-  client_id      INT REFERENCES clients(id),
-  symbol         TEXT NOT NULL,
-  side           TEXT NOT NULL,
-  qty            NUMERIC NOT NULL,
-  price          NUMERIC NOT NULL,
-  resultado      NUMERIC,
-  bybit_response JSONB,
-  reference_code TEXT,
-  created_at     TIMESTAMPTZ DEFAULT now()
+-- USER SETTINGS
+CREATE TABLE IF NOT EXISTS user_settings (
+  user_id INTEGER PRIMARY KEY REFERENCES users(user_id),
+  bybit_api_key TEXT,
+  bybit_api_secret TEXT,
+  capital_per_order NUMERIC,
+  leverage INTEGER,
+  stop_loss_type VARCHAR(20),
+  stop_loss_value NUMERIC,
+  telegram_id VARCHAR(50),
+  whatsapp_number VARCHAR(20),
+  notificacao_email BOOLEAN DEFAULT FALSE,
+  notificacao_telegram BOOLEAN DEFAULT FALSE,
+  notificacao_whatsapp BOOLEAN DEFAULT TRUE
 );
 
--- market_mode
-CREATE TABLE IF NOT EXISTS market_mode (
-  id         SERIAL PRIMARY KEY,
-  mode       TEXT NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT now()
+-- SIGNALS (Webhook TradingView)
+CREATE TABLE IF NOT EXISTS signals (
+  id SERIAL PRIMARY KEY,
+  received_at TIMESTAMP DEFAULT NOW(),
+  raw_payload JSONB
+);
+
+-- ORDERS (execução, controle e histórico)
+CREATE TABLE IF NOT EXISTS orders (
+  order_id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(user_id),
+  signal_id INTEGER REFERENCES signals(id),
+  status VARCHAR(20) DEFAULT 'aberta',
+  tipo VARCHAR(10),
+  symbol VARCHAR(20),
+  entry_price NUMERIC,
+  exit_price NUMERIC,
+  volume NUMERIC,
+  resultado NUMERIC,
+  aberta_em TIMESTAMP DEFAULT NOW(),
+  fechada_em TIMESTAMP
+);
+
+-- AUDIT LOGS (monitoramento IA e erros)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id SERIAL PRIMARY KEY,
+  data TIMESTAMP DEFAULT NOW(),
+  evento VARCHAR(100),
+  detalhes TEXT,
+  status VARCHAR(20),
+  payload JSONB
 );

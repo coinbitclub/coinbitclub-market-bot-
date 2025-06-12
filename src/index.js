@@ -1,22 +1,42 @@
-import 'dotenv/config';
 import express from 'express';
-import './coinstatsCron.js';               // dispara o cron automaticamente
-import { save as saveSignal } from './services/databaseService.js';
+import dotenv from 'dotenv';
+import { startCoinstatsCron } from './coinstatsCron.js';
+import {
+  getLatestFearGreed,
+  getLatestBTCDominance
+} from './databaseService.js';
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-// endpoint que o TradingView aponta
-app.post('/webhook/signal', async (req, res) => {
+const PORT = process.env.PORT || 3000;
+
+// inicia o cron assim que o app sobe
+startCoinstatsCron();
+
+// rotas expostas
+app.get('/api/fear-greed', async (req, res) => {
   try {
-    await saveSignal('dominance_signals', JSON.stringify(req.body));
-    console.log('Sinal recebido:', req.body);
-    res.sendStatus(200);
+    const payload = await getLatestFearGreed();
+    if (!payload) return res.status(404).json({ error: 'Nenhum dado cadastrado ainda.' });
+    res.json(payload);
   } catch (err) {
-    console.error('Erro no webhook:', err);
-    res.sendStatus(500);
+    res.status(500).json({ error: err.message });
   }
 });
 
-const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`🚀 market-bot listening on port ${port}`));
+app.get('/api/btc-dominance', async (req, res) => {
+  try {
+    const payload = await getLatestBTCDominance();
+    if (!payload) return res.status(404).json({ error: 'Nenhum dado cadastrado ainda.' });
+    res.json(payload);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 market-bot ouvindo na porta ${PORT}`);
+});

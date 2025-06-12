@@ -1,9 +1,11 @@
 import axios from 'axios';
+import { Pool } from 'pg';
 
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const API_KEY = process.env.COINSTATS_API_KEY;
 
 // Fear & Greed
-export async function saveFearGreed(pool) {
+export async function saveFearGreed() {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
     const resp = await axios.get(url, {
@@ -20,12 +22,12 @@ export async function saveFearGreed(pool) {
     return resp.data;
   } catch (e) {
     console.error('Erro salvando Fear & Greed:', e.message);
-    return null;
+    throw e;
   }
 }
 
 // BTC Dominance
-export async function saveBTCDominance(pool) {
+export async function saveBTCDominance() {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/btc-dominance';
     const resp = await axios.get(url, {
@@ -42,6 +44,6 @@ export async function saveBTCDominance(pool) {
     return resp.data;
   } catch (e) {
     console.error('Erro salvando BTC Dominance:', e.message);
-    return null;
+    throw e;
   }
 }

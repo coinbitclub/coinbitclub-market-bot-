@@ -1,10 +1,9 @@
 import axios from 'axios';
-import { Pool } from 'pg';
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const API_KEY = process.env.COINSTATS_API_KEY;
 
-export async function saveFearGreed() {
+// Fear & Greed
+export async function getFearGreedIndexAndSave(pool) {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/fear-and-greed';
     const resp = await axios.get(url, {
@@ -25,7 +24,8 @@ export async function saveFearGreed() {
   }
 }
 
-export async function saveBTCDominance() {
+// BTC Dominance
+export async function getBTCDominanceAndSave(pool) {
   try {
     const url = 'https://openapiv1.coinstats.app/insights/btc-dominance';
     const resp = await axios.get(url, {

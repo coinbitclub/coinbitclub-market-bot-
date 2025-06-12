@@ -1,21 +1,15 @@
-// src/services/coinstatsService.js
 import axios from 'axios';
-import db from '../databaseService.js';
+import db from './databaseService.js';
 
-export async function getBTCDominanceAndSave() {
-  const { data } = await axios.get('https://openapiv1.coinstats.app/insights/btc-dominance');
-  await db.query(
-    `INSERT INTO coinstats_btc_dominance(raw_payload) VALUES($1)`,
-    [data]
-  );
-  console.log('[Cron] BTC Dominance salvo');
+tconst BASE = 'https://openapiv1.coinstats.app/insights';
+
+export async function fetchAndStoreDominance() {
+  const url = `${BASE}/btc-dominance`;
+  const resp = await axios.get(url);
+  await db.insert('coinstats_btc_dominance', resp.data);
 }
-
-export async function getFearAndGreedAndSave() {
-  const { data } = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed');
-  await db.query(
-    `INSERT INTO coinstats_fear_greed(raw_payload) VALUES($1)`,
-    [data]
-  );
-  console.log('[Cron] Fear & Greed salvo');
+export async function fetchAndStoreFearGreed() {
+  const url = `${BASE}/fear-and-greed`;
+  const resp = await axios.get(url);
+  await db.insert('coinstats_fear_greed', resp.data);
 }

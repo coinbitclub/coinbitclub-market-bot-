@@ -13,7 +13,7 @@ export async function saveSignal(signal) {
   `;
   await query(sql, [
     signal.ticker,
-    signal.time,         // mapeado para captured_at
+    signal.time,         // aqui vai para captured_at
     signal.close,
     signal.ema9_30,
     signal.rsi_4h,

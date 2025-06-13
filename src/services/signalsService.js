@@ -1,4 +1,3 @@
-// src/services/signalsService.js
 import { query } from '../databaseService.js';
 
 export async function saveSignal(signal) {
@@ -11,7 +10,7 @@ export async function saveSignal(signal) {
   `;
   await query(sql, [
     signal.ticker,
-    signal.captured_at,
+    signal.time,
     signal.close,
     signal.ema9_30,
     signal.rsi_4h,

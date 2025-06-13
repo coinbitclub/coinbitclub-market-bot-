@@ -1,10 +1,15 @@
-// src/databaseService.js
+/* ===========================================
+   src/databaseService.js
+   =========================================== */
 import pkg from 'pg';
 const { Pool } = pkg;
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Ajuste sua connectionString aqui (já vem do Railway/SOFTR/SOA/etc)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production'
+});
 
 export async function query(text, params) {
-  const res = await pool.query(text, params);
-  return res;
+  return pool.query(text, params);
 }

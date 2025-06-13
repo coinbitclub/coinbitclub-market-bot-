@@ -1,4 +1,4 @@
-# Dockerfile para produção
+Dockerfile para produção
 FROM node:18-alpine
 
 # diretório de trabalho

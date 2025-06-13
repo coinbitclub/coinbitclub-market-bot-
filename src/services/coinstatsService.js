@@ -1,34 +1,27 @@
-// src/services/coinstatsService.js
-
 import axios from 'axios';
-// <<< CORREÇÃO AQUI: caminho para a raiz do src
 import { query } from '../databaseService.js';
 
 export async function getFearGreedAndDominance(apiKey) {
-  const res = await axios.get(
-    `https://api.coinstats.app/public/v1/global?apiKey=${apiKey}`
-  );
-  const { totalMarketCap, volume24h, dominance, altcoinSeason, fearGreedScore } = res.data;
+  const res = await axios.get('https://openapiv1.coinstats.app/insights', {
+    params: { key: apiKey }
+  });
+  return {
+    fearGreed: res.data.fearGreed,
+    dominance: res.data.dominance
+  };
+}
 
-  const now = new Date();
-  // Grava Fear & Greed (se existir)
-  if (fearGreedScore !== undefined) {
-    await query(
-      'INSERT INTO fear_greed(captured_at, value) VALUES($1, $2)',
-      [now, fearGreedScore]
-    );
-  }
-  // Grava métricas de mercado
-  await query(
-    `INSERT INTO market_metrics(
-        captured_at,
-        volume_24h,
-        market_cap,
-        dominance,
-        altcoin_season
-      ) VALUES ($1,$2,$3,$4,$5)`,
-    [now, volume24h, totalMarketCap, dominance, altcoinSeason]
-  );
-
-  return { fearGreed: fearGreedScore, dominance };
+export async function saveDominance(payload) {
+  const sql = `
+    INSERT INTO btc_dominance_signals(
+      ticker, captured_at, dominance_pct, ema7, diff_pct, signal
+    ) VALUES($1,$2,$3,$4,$5,$6)`;
+  await query(sql, [
+    payload.ticker,
+    new Date(payload.time),
+    parseFloat(payload.btc_dominance || payload.dominance),
+    parseFloat(payload.ema_7 || payload.ema7),
+    parseFloat(payload.diff_pct),
+    payload.sinal || payload.signal
+  ]);
 }

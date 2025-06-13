@@ -1,25 +1,28 @@
-import { Router } from 'express';
-import { saveSignal } from './services/signalsService.js';
-import { saveDominance } from './services/coinstatsService.js';
+import express from 'express';
+import { parseSignal }     from './signals.js';
+import { saveSignal }      from './services/signalsService.js';
+import { saveDominance }   from './services/coinstatsService.js';
+import { logger }          from './logger.js';
 
-const router = new Router();
+const router = express.Router();
 
-// Recebe sinal completo (vindo do TradingView)
 router.post('/signal', async (req, res, next) => {
   try {
-    await saveSignal(req.body);
+    const signal = parseSignal(req.body);
+    await saveSignal(signal);
     return res.status(200).send('Signal received');
   } catch (err) {
+    logger.error(err.stack);
     next(err);
   }
 });
 
-// Recebe dominance BTC (vindo do TradingView)
 router.post('/dominance', async (req, res, next) => {
   try {
     await saveDominance(req.body);
     return res.status(200).send('Dominance received');
   } catch (err) {
+    logger.error(err.stack);
     next(err);
   }
 });

@@ -9,8 +9,12 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: '100kb' }));
 
+// ➜ Handler para raiz (health-check padrão)
+app.get('/', (_req, res) => res.send('OK'));
+
 app.use('/webhook', webhookRoutes);
 app.get('/health', (_req, res) => res.sendStatus(200));
+// …
 
 // error handler
 app.use((err, _req, res, _next) => {

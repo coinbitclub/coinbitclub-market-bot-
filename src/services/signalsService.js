@@ -1,30 +1,19 @@
-/* ========== src/services/signalsService.js ========== */
+// src/services/signalsService.js
 import { query } from '../databaseService.js';
 
 /**
- * Salva um sinal vindo do TradingView na tabela `signals`
- * @param {object} signal — objeto retornado por parseSignal()
+ * Persiste o sinal vindo do TradingView (payload JSON de src/signals.js)
  */
 export async function saveSignal(signal) {
   const sql = `
-    INSERT INTO signals (
-      ticker,
-      captured_at,
-      close,
-      ema9_30,
-      rsi_4h,
-      rsi_15,
-      momentum_15,
-      atr_30,
-      atr_pct_30,
-      vol_30,
-      vol_ma_30,
-      diff_btc_ema7,
-      cruzou_acima_ema9,
-      cruzou_abaixo_ema9,
-      leverage
-    ) VALUES (
-      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
+    INSERT INTO signals
+      (ticker, time, close, ema9_30, rsi_4h, rsi_15, momentum_15,
+       atr_30, atr_pct_30, vol_30, vol_ma_30, diff_btc_ema7,
+       cruzou_acima_ema9, cruzou_abaixo_ema9, leverage)
+    VALUES(
+      $1,$2,$3,$4,$5,$6,$7,
+      $8,$9,$10,$11,$12,
+      $13,$14,$15
     )
   `;
   await query(sql, [

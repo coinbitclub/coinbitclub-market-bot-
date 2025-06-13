@@ -1,6 +1,3 @@
-/* =============================================
-   src/exchangeService.js
-   ============================================= */
 export { placeBybitOrder } from './bybitService.js';
 export { placeBinanceOrder } from './binanceService.js';
 export async function fetchOpenPositions() {

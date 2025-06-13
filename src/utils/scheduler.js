@@ -23,4 +23,11 @@ export function setupScheduler() {
       logger.error(`Purge error: ${err.message}`);
     }
   });
+  cron.schedule('0 8,12,16 * * *', async () => {
+  try {
+    await fetchAndSaveMetrics();
+  } catch (err) {
+    logger.error(`Metrics cron error: ${err.message}`);
+  }
+});
 }

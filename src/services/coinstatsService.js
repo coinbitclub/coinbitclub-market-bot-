@@ -61,4 +61,32 @@ export async function saveFearGreed(data) {
     data.value_classification,
     data.timestamp
   ]);
+  // src/services/coinstatsService.js
+
+/**
+ * Função para normalizar e preparar o payload de Dominância BTC recebido pelo webhook.
+ * Aceita formatos variados vindos do TradingView.
+ */
+export function parseDominance(payload) {
+  let captured_at = new Date();
+  // Tenta normalizar a data/hora do sinal recebido
+  if (payload.time) {
+    // Caso venha em formato epoch milissegundos
+    if (typeof payload.time === 'number' || /^\d+$/.test(payload.time)) {
+      captured_at = new Date(Number(payload.time));
+    } else {
+      // Caso venha como string data/hora
+      captured_at = new Date(payload.time);
+    }
+  }
+
+  return {
+    ticker:         payload.ticker ?? null,
+    captured_at,
+    dominance_pct:  parseFloat(payload.btc_dominance ?? payload.dominance ?? null),
+    ema7:           parseFloat(payload.ema_7 ?? payload.ema7 ?? null),
+    diff_pct:       parseFloat(payload.diff_pct ?? null),
+    signal:         payload.sinal ?? payload.signal ?? null
+  };
 }
+

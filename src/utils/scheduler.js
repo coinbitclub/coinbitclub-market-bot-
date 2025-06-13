@@ -1,9 +1,17 @@
 import cron from 'node-cron';
-import { fetchAndSaveMetrics } from '../src/coinstatsService.js';
-import { query } from '../src/databaseService.js';
-import { logger } from '../src/logger.js';
+import { query } from '../databaseService.js';
+import { dailyRetraining } from '../tradingBot.js';
 
 export function setupScheduler() {
-cron.schedule('0 8,12,16 * * *', async () => { await fetchAndSaveMetrics(); });
-cron.schedule('0 * * * *', async () => { await query(DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'); });
+  // 1) Deleta sinais com mais de 72h, a cada hora no minuto zero:
+  cron.schedule('0 * * * *', async () => {
+    await query(
+      "DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'"
+    );
+  });
+
+  // 2) Re-treina a IA todo dia à meia-noite UTC:
+  cron.schedule('0 0 * * *', async () => {
+    await dailyRetraining();
+  });
 }

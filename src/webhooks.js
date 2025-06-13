@@ -1,31 +1,39 @@
-// src/webhooks.js
+// src/index.js
+
 import express from 'express';
-import { parseSignal, saveSignal } from './services/signalsService.js';
-import { parseDominance, saveDominance } from './services/coinstatsService.js';
+import dotenv from 'dotenv';
+import webhookRoutes from './webhooks.js';
+import { setupScheduler } from './utils/scheduler.js';
 import { logger } from './logger.js';
 
-const router = express.Router();
+dotenv.config();
+const app = express();
+app.use(express.json({ limit: '100kb' }));
 
-router.post('/signal', async (req, res, next) => {
-  try {
-    const sig = parseSignal(req.body);
-    await saveSignal(sig);
-    res.status(200).send('Signal received');
-  } catch (err) {
-    logger.error(err.stack || err);
-    next(err);
+// Middleware global para checar token nas rotas webhook
+app.use('/webhook', (req, res, next) => {
+  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
+    return res.status(401).send('Unauthorized');
   }
+  next();
 });
 
-router.post('/dominance', async (req, res, next) => {
-  try {
-    const dom = parseDominance(req.body);
-    await saveDominance(dom);
-    res.status(200).send('Dominance received');
-  } catch (err) {
-    logger.error(err.stack || err);
-    next(err);
-  }
+// Health check
+app.get('/', (_req, res) => res.send('OK'));
+app.get('/health', (_req, res) => res.sendStatus(200));
+
+// Rotas do webhook
+app.use('/webhook', webhookRoutes);
+
+// Error handler
+app.use((err, _req, res, _next) => {
+  logger.error(err.stack || err);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
-export default router;
+// Inicia servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
+  setupScheduler();
+});

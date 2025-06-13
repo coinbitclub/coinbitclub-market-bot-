@@ -1,31 +1,27 @@
-import cron    from 'node-cron';
+// src/utils/scheduler.js
+import cron  from 'node-cron';
 import { query } from '../databaseService.js';
 import {
-  getFearGreedAndDominance,
-  fetchMetrics
+  fetchMetrics,
+  getFearGreedAndDominance
 } from '../services/coinstatsService.js';
 import { dailyRetraining } from '../tradingBot.js';
 
-/**
- * Configura as tarefas agendadas do sistema.
- */
 export function setupScheduler() {
-  // 1) Limpar sinais antigos (72h)
+  // 1) Limpar signals >72h todo início de hora
   cron.schedule('0 * * * *', async () => {
-    await query(
-      `DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`
-    );
+    await query(`DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`);
     console.log('[Scheduler] Old signals purged');
   });
 
-  // 2) Buscar métricas da CoinStats a cada hora (minuto 5)
+  // 2) Gravar market_metrics a cada hora, minuto 05
   cron.schedule('5 * * * *', async () => {
     try {
       const m = await fetchMetrics(process.env.COINSTATS_API_KEY);
       await query(
         `INSERT INTO market_metrics
-         (captured_at, volume_24h, market_cap, dominance, altcoin_season, rsi_market)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
+          (captured_at, volume_24h, market_cap, dominance, altcoin_season, rsi_market)
+         VALUES($1,$2,$3,$4,$5,$6)`,
         [
           m.captured_at,
           m.volume_24h,
@@ -41,7 +37,7 @@ export function setupScheduler() {
     }
   });
 
-  // 3) Re-treinamento diário da IA (ex: 02:00 UTC)
+  // 3) Re-treinamento IA diário às 02:00 UTC
   cron.schedule('0 2 * * *', async () => {
     try {
       await dailyRetraining();
@@ -51,8 +47,8 @@ export function setupScheduler() {
     }
   });
 
-  // --- aqui você pode adicionar outras tasks, ex:
-  // • alertas em abertura/fechamento das bolsas asiáticas
-  // • acompanhamento de notícias macro
-  // • relatórios periódicos por e-mail/Slack
+  // ➕ Aqui você pode adicionar:
+  //   • alertas de abertura/fechamento de bolsas asiáticas
+  //   • checks de notícias macro
+  //   • relatórios por e-mail/Slack, etc.
 }

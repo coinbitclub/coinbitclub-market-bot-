@@ -1,3 +1,4 @@
+// src/webhooks.js
 import express from 'express';
 import { parseSignal, saveSignal } from './services/signalsService.js';
 import { parseDominance, saveDominance } from './services/coinstatsService.js';
@@ -15,6 +16,7 @@ router.post('/signal', async (req, res, next) => {
     next(err);
   }
 });
+
 router.post('/dominance', async (req, res, next) => {
   try {
     const dom = parseDominance(req.body);
@@ -25,6 +27,5 @@ router.post('/dominance', async (req, res, next) => {
     next(err);
   }
 });
-
 
 export default router;

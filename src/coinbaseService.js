@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 const CB_BASE = 'https://api.pro.coinbase.com';
 export async function getCoinbaseMetrics() {

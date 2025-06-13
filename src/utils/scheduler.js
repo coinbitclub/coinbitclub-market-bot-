@@ -1,8 +1,9 @@
 import cron from 'node-cron';
 import { fetchMetrics, saveMarketMetrics, fetchFearGreed, saveFearGreed } from '../services/coinstatsService.js';
+import { query } from '../databaseService.js'; // ATENÇÃO: precisa importar para rodar a query!
 
 export function setupScheduler() {
-  // Coleta de métricas a cada 2h (ajustado conforme solicitado)
+  // Coleta de métricas a cada 2h
   cron.schedule('0 */2 * * *', async () => {
     try {
       const apiKey = process.env.COINSTATS_API_KEY;
@@ -17,10 +18,11 @@ export function setupScheduler() {
     }
   });
 
-  // Limpeza diária dos sinais (exemplo)
+  // Limpeza diária dos sinais antigos (>72h)
   cron.schedule('0 1 * * *', async () => {
     try {
       await query(`DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`);
+      console.log('Signals antigos limpos');
     } catch (err) {
       console.error('Erro ao limpar signals antigas:', err);
     }

@@ -1,54 +1,35 @@
-// src/utils/scheduler.js
-import cron  from 'node-cron';
+/* ===========================================
+   src/utils/scheduler.js
+   =========================================== */
+import cron from 'node-cron';
+import { fetchMetrics, getFearGreedAndDominance } from '../services/coinstatsService.js';
 import { query } from '../databaseService.js';
-import {
-  fetchMetrics,
-  getFearGreedAndDominance
-} from '../services/coinstatsService.js';
 import { dailyRetraining } from '../tradingBot.js';
 
 export function setupScheduler() {
-  // 1) Limpar signals >72h todo início de hora
+  // a) A cada hora 🕒 fetchMetrics → market_metrics
   cron.schedule('0 * * * *', async () => {
-    await query(`DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`);
-    console.log('[Scheduler] Old signals purged');
-  });
-
-  // 2) Gravar market_metrics a cada hora, minuto 05
-  cron.schedule('5 * * * *', async () => {
     try {
       const m = await fetchMetrics(process.env.COINSTATS_API_KEY);
       await query(
-        `INSERT INTO market_metrics
-          (captured_at, volume_24h, market_cap, dominance, altcoin_season, rsi_market)
+        `INSERT INTO market_metrics (captured_at, volume_24h, market_cap, dominance, altcoin_season, rsi_market)
          VALUES($1,$2,$3,$4,$5,$6)`,
-        [
-          m.captured_at,
-          m.volume_24h,
-          m.market_cap,
-          m.dominance,
-          m.altcoin_season,
-          m.rsi_market
-        ]
+        [m.captured_at, m.volume_24h, m.market_cap, m.dominance, m.altcoin_season, m.rsi_market]
       );
-      console.log('[Scheduler] Market metrics recorded');
     } catch (err) {
-      console.error('[Scheduler] fetchMetrics error', err);
+      console.error('Erro ao salvar market_metrics:', err);
     }
   });
 
-  // 3) Re-treinamento IA diário às 02:00 UTC
-  cron.schedule('0 2 * * *', async () => {
+  // b) Diariamente à meia-noite UTC 🔄 fine-tuning
+  cron.schedule('0 0 * * *', dailyRetraining);
+
+  // c) Diariamente às 01:00 → limpar sinais mais antigos que 72h
+  cron.schedule('0 1 * * *', async () => {
     try {
-      await dailyRetraining();
-      console.log('[Scheduler] dailyRetraining executed');
+      await query(`DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'`);
     } catch (err) {
-      console.error('[Scheduler] dailyRetraining error', err);
+      console.error('Erro ao limpar signals antigas:', err);
     }
   });
-
-  // ➕ Aqui você pode adicionar:
-  //   • alertas de abertura/fechamento de bolsas asiáticas
-  //   • checks de notícias macro
-  //   • relatórios por e-mail/Slack, etc.
 }

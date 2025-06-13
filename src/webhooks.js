@@ -1,8 +1,8 @@
 /* ========== src/webhooks.js ========== */
 import express from 'express';
-import { parseSignal }    from './signals.js';                     // parser local
-import { saveSignal }     from './services/signalsService.js';    // grava sinais no DB
-import { saveDominance }  from './services/coinstatsService.js';  // grava dominância no DB
+import { parseSignal }   from './signals.js';
+import { saveSignal }    from './services/signalsService.js';
+import { saveDominance } from './services/coinstatsService.js';
 import { logger }         from './logger.js';
 
 const router = express.Router();

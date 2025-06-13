@@ -1,13 +1,11 @@
-# Dockerfile para produção
+# Dockerfile
 FROM node:18-alpine
-
 WORKDIR /app
 
-# copia e instala dependências de produção
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json ./
+# veja se há lockfile: se tiver, copie também; senão, use install
+COPY package-lock.json ./
+RUN npm install --omit=dev
 
-# copia todo o código
 COPY . .
-
 CMD ["node", "src/index.js"]

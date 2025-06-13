@@ -1,7 +1,7 @@
 export function parseSignal(payload) {
   return {
     ticker:             payload.ticker,
-    time:               new Date(payload.time),
+    captured_at:        new Date(Number(payload.time.toString().replace(/.*(\d{13})/, "$1"))), // ajusta para timestamp se necessário
     close:              parseFloat(payload.close),
     ema9_30:            parseFloat(payload.ema9_30),
     rsi_4h:             parseFloat(payload.rsi_4h),
@@ -12,8 +12,8 @@ export function parseSignal(payload) {
     vol_30:             parseFloat(payload.vol_30),
     vol_ma_30:          parseFloat(payload.vol_ma_30),
     diff_btc_ema7:      parseFloat(payload.diff_btc_ema7),
-    cruzou_acima_ema9:  Boolean(payload.cruzou_acima_ema9),
-    cruzou_abaixo_ema9: Boolean(payload.cruzou_abaixo_ema9),
+    cruzou_acima_ema9:  payload.cruzou_acima_ema9 === "1" || payload.cruzou_acima_ema9 === 1,
+    cruzou_abaixo_ema9: payload.cruzou_abaixo_ema9 === "1" || payload.cruzou_abaixo_ema9 === 1,
     leverage:           payload.leverage ? parseInt(payload.leverage) : 6
   };
 }

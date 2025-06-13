@@ -1,48 +1,33 @@
 // src/webhooks.js
 import express from 'express';
-import { query } from './databaseService.js'; // ou ajuste o caminho do seu serviço de banco!
+import { parseSignal, saveSignal } from './services/signalsService.js';
+import { parseDominance, saveDominance } from './services/coinstatsService.js';
+import { logger } from './logger.js';
 
 const router = express.Router();
 
-router.post('/signal', async (req, res) => {
+// Rota para sinais do TradingView
+router.post('/signal', async (req, res, next) => {
   try {
-    // Esperando o alerta do TradingView em JSON já no body
-    const {
-      ticker,
-      time,
-      diff_btc_ema7,
-      cruzou_acima_ema9,
-      cruzou_abaixo_ema9,
-      ...rest // tudo o que não está mapeado acima
-    } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-
-    // Monta os valores para o banco
-    const insertQuery = `
-      INSERT INTO signals
-      (ticker, signal_time, diff_btc_ema7, cruzou_acima_ema9, cruzou_abaixo_ema9, payload)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id
-    `;
-    const values = [
-      ticker,
-      time ? new Date(time) : new Date(), // se não vier, usa agora
-      diff_btc_ema7 ? Number(diff_btc_ema7) : null,
-      cruzou_acima_ema9 === undefined ? null : !!Number(cruzou_acima_ema9),
-      cruzou_abaixo_ema9 === undefined ? null : !!Number(cruzou_abaixo_ema9),
-      rest ? JSON.stringify(req.body) : '{}'
-    ];
-
-    await query(insertQuery, values);
-    res.status(200).json({ ok: true });
+    const sig = parseSignal(req.body);
+    await saveSignal(sig);
+    res.status(200).send('Signal received');
   } catch (err) {
-    console.error('Erro no webhook /signal:', err);
-    res.status(500).json({ error: 'Falha ao processar sinal' });
+    logger.error(err.stack || err);
+    next(err);
   }
 });
 
-router.post('/dominance', async (req, res) => {
-  // Exemplo de handler para dominance (ajuste conforme sua tabela específica)
-  res.status(200).json({ ok: true });
+// Rota para dominância BTC.D
+router.post('/dominance', async (req, res, next) => {
+  try {
+    const dom = parseDominance(req.body);
+    await saveDominance(dom);
+    res.status(200).send('Dominance received');
+  } catch (err) {
+    logger.error(err.stack || err);
+    next(err);
+  }
 });
 
 export default router;

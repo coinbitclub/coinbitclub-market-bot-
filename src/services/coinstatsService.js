@@ -1,4 +1,3 @@
-// src/services/coinstatsService.js
 import { query } from '../databaseService.js';
 
 export function parseDominance(payload) {

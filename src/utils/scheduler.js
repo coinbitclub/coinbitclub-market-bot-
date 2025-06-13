@@ -1,48 +1,87 @@
+/* ========== src/utils/scheduler.js ========== */
 import cron from 'node-cron';
 import { query } from '../databaseService.js';
-import { dailyRetraining } from '../tradingBot.js';
-import { getFearGreedAndDominance } from '../services/coinstatsService.js';
-import { sendReport } from '../services/reportService.js';
+import { getFearGreedAndDominance, fetchMetrics } from '../services/coinstatsService.js';
+import { dailyRetraining, monitorOpenPositions } from '../tradingBot.js';
+import { logger } from '../logger.js';
 
+/**
+ * Aqui você define todas as suas tarefas agendadas:
+ *  • Limpeza de sinais antigos (mais de 72h)
+ *  • Coleta de métricas da CoinStats (a cada X minutos)
+ *  • Retraining diário da IA
+ *  • Monitoramento de posições abertas (a cada minuto)
+ *  • Envio de relatórios nos horários de abertura e fechamento das bolsas asiáticas
+ *  • Busca de notícias macro diariamente
+ */
 export function setupScheduler() {
-  // 1) limpa sinais >72h a cada hora
-  cron.schedule('0 * * * *', async () => {
-    try {
-      await query("DELETE FROM signals WHERE captured_at < NOW() - INTERVAL '72 hours'");
-      console.log('[Scheduler] Sinais antigos limpos');
-    } catch (e) {
-      console.error('[Scheduler] Erro limpando sinais:', e);
-    }
-  });
-
-  // 2) retraining diário à 00:00 UTC
+  // 1) Limpar sinais mais antigos que 72h, todo dia à meia-noite
   cron.schedule('0 0 * * *', async () => {
     try {
-      await dailyRetraining();
-      console.log('[Scheduler] Retraining diário OK');
-    } catch (e) {
-      console.error('[Scheduler] Erro retraining:', e);
+      await query(
+        `DELETE FROM signals
+         WHERE created_at < NOW() - INTERVAL '72 hours'`
+      );
+      logger.info('🧹 Sinais antigos (>72h) limpos com sucesso');
+    } catch (err) {
+      logger.error(`Falha ao limpar sinais antigos: ${err.message}`);
     }
   });
 
-  // 3) CoinStats a cada 30 minutos
-  cron.schedule('*/30 * * * *', async () => {
+  // 2) Capturar métricas da CoinStats a cada 5 minutos
+  cron.schedule('*/5 * * * *', async () => {
     try {
-      const { fearGreed, dominance } = await getFearGreedAndDominance(process.env.COINSTATS_API_KEY);
-      await query('INSERT INTO fear_greed(captured_at,value) VALUES($1,$2)', [new Date(), fearGreed]);
-      await query('INSERT INTO market_metrics(captured_at,dominance) VALUES($1,$2)', [new Date(), dominance]);
-      console.log('[Scheduler] Métricas CoinStats inseridas');
-    } catch (e) {
-      console.error('[Scheduler] Erro CoinStats:', e);
+      const metrics = await fetchMetrics(process.env.COINSTATS_API_KEY);
+      // fear/greed
+      await query(
+        'INSERT INTO fear_greed(captured_at, value) VALUES ($1, $2)',
+        [new Date(), metrics.fearGreed]
+      );
+      // market_metrics
+      await query(
+        `INSERT INTO market_metrics(
+           captured_at, volume_24h, market_cap, dominance, altcoin_season, rsi_market
+         ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          new Date(),
+          metrics.volume_24h,
+          metrics.market_cap,
+          metrics.dominance,
+          metrics.altcoin_season,
+          metrics.rsi_market
+        ]
+      );
+      logger.info('📊 Métricas CoinStats coletadas e salvas');
+    } catch (err) {
+      logger.error(`Erro ao coletar métricas CoinStats: ${err.message}`);
     }
   });
 
-  // 4) Relatórios Ásia (Open/Close)
-  cron.schedule('0 0 * * *', async () => { await sendReport('asia_open'); });
-  cron.schedule('0 6 * * *', async () => { await sendReport('asia_close'); });
+  // 3) Retraining diário da IA – 00:00 UTC
+  cron.schedule('0 0 * * *', dailyRetraining);
 
-  // 5) Relatório macro EUA (Seg–Sex 12:30 UTC)
-  cron.schedule('30 12 * * 1-5', async () => { await sendReport('us_macro'); });
+  // 4) Monitorar posições abertas a cada minuto
+  cron.schedule('* * * * *', monitorOpenPositions);
 
-  console.log('[Scheduler] Tarefas agendadas');
+  // 5) Envio de relatórios nos horários da Ásia (exemplo: 0:00 e 9:00 UTC)
+  cron.schedule('0 0 * * *', () => {
+    logger.info('📈 Enviando relatório de abertura da Ásia');
+    // chamar sua função de relatório aqui...
+  });
+  cron.schedule('0 9 * * *', () => {
+    logger.info('📉 Enviando relatório de fechamento da Ásia');
+    // chamar sua função de relatório aqui...
+  });
+
+  // 6) Buscar notícias macrodiárias (ex: 12:00 UTC)
+  cron.schedule('0 12 * * *', async () => {
+    try {
+      logger.info('📰 Coletando notícias macroeconômicas');
+      // await fetchMacroNews();
+    } catch (err) {
+      logger.error(`Erro ao buscar notícias macro: ${err.message}`);
+    }
+  });
+
+  logger.info('⏱️ Scheduler inicializado com todas as tarefas agendadas');
 }

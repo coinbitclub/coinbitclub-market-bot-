@@ -17,7 +17,7 @@ router.post('/signal', async (req, res, next) => {
   }
 });
 
-// Dominância (BTC.D)
+// Dominância BTC.D TradingView
 router.post('/dominance', async (req, res, next) => {
   try {
     const dom = parseDominance(req.body);

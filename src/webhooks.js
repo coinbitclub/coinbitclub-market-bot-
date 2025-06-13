@@ -1,6 +1,3 @@
-/* =============================================
-   src/webhooks.js
-   ============================================= */
 import express from 'express';
 import { logger } from './logger.js';
 import { parseSignal } from './signals.js';
@@ -24,6 +21,35 @@ router.post('/webhook/signal', async (req, res) => {
     logger.error(err.stack);
     res.status(500).send('Error');
   }
+   import express from 'express';
+import { getFearGreedAndDominance } from './coinstatsService.js';
+
+const router = express.Router();
+
+// retorna o Fear & Greed atual
+router.get('/api/fear-greed', async (req, res) => {
+  try {
+    const { fearGreed } = await getFearGreedAndDominance(process.env.COINSTATS_API_KEY);
+    return res.json({ fearGreed });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'Could not fetch Fear & Greed' });
+  }
+});
+
+// retorna a Dominância BTC atual
+router.get('/api/btc-dominance', async (req, res) => {
+  try {
+    const { dominance } = await getFearGreedAndDominance(process.env.COINSTATS_API_KEY);
+    return res.json({ dominance });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ error: 'Could not fetch BTC dominance' });
+  }
+});
+
+export default router;
+
 });
 
 router.post('/webhook/dominance', (req,res)=>res.send('OK'));

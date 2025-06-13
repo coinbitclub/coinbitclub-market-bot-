@@ -5,7 +5,6 @@ import { logger } from './logger.js';
 
 const router = express.Router();
 
-// Sinais do TradingView
 router.post('/signal', async (req, res, next) => {
   try {
     const sig = parseSignal(req.body);
@@ -16,8 +15,6 @@ router.post('/signal', async (req, res, next) => {
     next(err);
   }
 });
-
-// Dominância BTC.D TradingView
 router.post('/dominance', async (req, res, next) => {
   try {
     const dom = parseDominance(req.body);
@@ -28,5 +25,6 @@ router.post('/dominance', async (req, res, next) => {
     next(err);
   }
 });
+
 
 export default router;

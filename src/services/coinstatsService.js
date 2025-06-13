@@ -1,7 +1,46 @@
 import axios from 'axios';
 import { query } from '../databaseService.js';
 
-// === 1. Buscar métricas de mercado global ===
+// Salvar Dominância (BTC.D) recebida por webhook
+export async function saveDominance(dominance) {
+  const sql = `
+    INSERT INTO btc_dominance_signals
+      (ticker, captured_at, dominance_pct, ema7, diff_pct, signal)
+    VALUES($1,$2,$3,$4,$5,$6)
+  `;
+  await query(sql, [
+    dominance.ticker,
+    dominance.captured_at,
+    dominance.dominance_pct,
+    dominance.ema7,
+    dominance.diff_pct,
+    dominance.signal
+  ]);
+}
+
+/**
+ * Parse da mensagem de Dominância recebida do TradingView
+ */
+export function parseDominance(payload) {
+  let captured_at = new Date();
+  if (payload.time) {
+    if (typeof payload.time === 'number' || /^\d+$/.test(payload.time)) {
+      captured_at = new Date(Number(payload.time));
+    } else {
+      captured_at = new Date(payload.time);
+    }
+  }
+  return {
+    ticker: payload.ticker ?? null,
+    captured_at,
+    dominance_pct: parseFloat(payload.btc_dominance ?? payload.dominance ?? null),
+    ema7: parseFloat(payload.ema_7 ?? payload.ema7 ?? null),
+    diff_pct: parseFloat(payload.diff_pct ?? null),
+    signal: payload.sinal ?? payload.signal ?? null
+  };
+}
+
+// Métricas de mercado - para uso no scheduler
 export async function fetchMetrics(apiKey) {
   const res = await axios.get('https://openapiv1.coinstats.app/markets', {
     headers: { 'X-API-KEY': apiKey }
@@ -35,7 +74,7 @@ export async function saveMarketMetrics(metrics) {
   ]);
 }
 
-// === 2. Buscar Fear & Greed Index ===
+// Fear & Greed
 export async function fetchFearGreed(apiKey) {
   const res = await axios.get('https://openapiv1.coinstats.app/insights/fear-and-greed', {
     headers: { 'X-API-KEY': apiKey }
@@ -60,42 +99,5 @@ export async function saveFearGreed(data) {
     data.value,
     data.value_classification,
     data.timestamp
-  ]);
-}
-
-// === 3. Função para normalizar payload de Dominância BTC do TradingView ===
-export function parseDominance(payload) {
-  let captured_at = new Date();
-  if (payload.time) {
-    if (typeof payload.time === 'number' || /^\d+$/.test(payload.time)) {
-      captured_at = new Date(Number(payload.time));
-    } else {
-      captured_at = new Date(payload.time);
-    }
-  }
-  return {
-    ticker: payload.ticker ?? null,
-    captured_at,
-    dominance_pct: parseFloat(payload.btc_dominance ?? payload.dominance ?? null),
-    ema7: parseFloat(payload.ema_7 ?? payload.ema7 ?? null),
-    diff_pct: parseFloat(payload.diff_pct ?? null),
-    signal: payload.sinal ?? payload.signal ?? null
-  };
-}
-
-// === 4. Salva dominance no banco ===
-export async function saveDominance(data) {
-  const sql = `
-    INSERT INTO btc_dominance_signals
-      (ticker, captured_at, dominance_pct, ema7, diff_pct, signal)
-    VALUES($1,$2,$3,$4,$5,$6)
-  `;
-  await query(sql, [
-    data.ticker,
-    data.captured_at,
-    data.dominance_pct,
-    data.ema7,
-    data.diff_pct,
-    data.signal
   ]);
 }

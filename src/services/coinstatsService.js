@@ -1,4 +1,6 @@
-// src/services/coinstatsService.js
+/* ===========================================
+   src/services/coinstatsService.js
+   =========================================== */
 import axios from 'axios';
 import { query } from '../databaseService.js';
 
@@ -11,12 +13,12 @@ export async function fetchMetrics(apiKey) {
   });
   const d = res.data;
   return {
-    captured_at:   new Date(),
-    volume_24h:    Number(d.volume_24h),
-    market_cap:    Number(d.market_cap),
-    dominance:     Number(d.dominance),
-    altcoin_season:d.altcoin_season,
-    rsi_market:    Number(d.rsi_market)
+    captured_at:    new Date(),
+    volume_24h:     Number(d.volume_24h),
+    market_cap:     Number(d.market_cap),
+    dominance:      Number(d.dominance),
+    altcoin_season: d.altcoin_season,
+    rsi_market:     Number(d.rsi_market)
   };
 }
 

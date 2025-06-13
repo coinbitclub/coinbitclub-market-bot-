@@ -1,4 +1,3 @@
-// src/webhooks.js
 import express from 'express';
 import { parseSignal, saveSignal } from './services/signalsService.js';
 import { parseDominance, saveDominance } from './services/coinstatsService.js';
@@ -6,9 +5,12 @@ import { logger } from './logger.js';
 
 const router = express.Router();
 
-// Rota para sinais do TradingView
+// Sinais do TradingView
 router.post('/signal', async (req, res, next) => {
   try {
+    // Debug: veja exatamente o que está chegando!
+    console.log('Payload recebido em /signal:', req.body);
+
     const sig = parseSignal(req.body);
     await saveSignal(sig);
     res.status(200).send('Signal received');
@@ -18,9 +20,12 @@ router.post('/signal', async (req, res, next) => {
   }
 });
 
-// Rota para dominância BTC.D
+// Dominância (BTC.D)
 router.post('/dominance', async (req, res, next) => {
   try {
+    // Debug: veja exatamente o que está chegando!
+    console.log('Payload recebido em /dominance:', req.body);
+
     const dom = parseDominance(req.body);
     await saveDominance(dom);
     res.status(200).send('Dominance received');

@@ -1,4 +1,3 @@
-// src/binanceService.js
 import axios from 'axios';
 import crypto from 'crypto';
 

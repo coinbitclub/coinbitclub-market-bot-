@@ -1,4 +1,4 @@
-import { query } from './databaseService.js';
+import { query } from '../databaseService.js'
 
 // Persistência de sinais (tradingview completo)
 export async function saveSignal(payload) {

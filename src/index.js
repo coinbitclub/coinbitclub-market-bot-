@@ -19,13 +19,11 @@ res.status(500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 3000;
-
-// Start server and scheduler
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
 logger.info(Server running on port ${PORT});
 setupScheduler();
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => app.close());
-process.on('SIGINT', () => app.close());
+process.on('SIGTERM', () => server.close(() => logger.info('Server closed on SIGTERM')));
+process.on('SIGINT', () => server.close(() => logger.info('Server closed on SIGINT')));

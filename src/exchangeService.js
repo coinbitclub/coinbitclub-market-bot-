@@ -1,9 +1,8 @@
-export { placeBybitOrder } from './bybitService.js';
-export { placeBinanceOrder } from './binanceService.js';
-export async function fetchOpenPositions() {
-  // Implementar fetch em Bybit/Binance via API
-  return [];
+export async function placeBybitOrder(opts) {
+// implementar chamada à API Bybit
 }
-export async function closePosition(id) {
-  // Implementar cancelamento/fechamento
+export async function placeBinanceOrder(opts) {
+// implementar chamada à API Binance
 }
+export async function fetchOpenPositions() { return []; }
+export async function closePosition(id) {}

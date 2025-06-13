@@ -1,4 +1,6 @@
-/* ========== src/webhooks.js ========== */
+/* =============================================
+   src/webhooks.js
+   ============================================= */
 import express from 'express';
 import { logger } from './logger.js';
 import { parseSignal } from './signals.js';
@@ -8,16 +10,13 @@ const router = express.Router();
 
 router.post('/webhook/signal', async (req, res) => {
   try {
-    const sig = parseSignal(req.body);
-    // Critério simplificado de entrada: diffDominance>0.3 + crossover de EMA9
-    if (sig.diffBtcEma7 >= 0.3 && sig.cruzouAcimaEma9) {
-      const result = await placeBybitOrder({ ...sig, apiKey: process.env.BYBIT_API_KEY, apiSecret: process.env.BYBIT_API_SECRET, leverage: sig.leverage });
-      logger.info(`Ordem LONG aberta: ${JSON.stringify(result)}`);
+    const s = parseSignal(req.body);
+    if (s.diffBtcEma7>=0.3 && s.cruzouAcimaEma9) {
+      await placeBybitOrder({ ...s, apiKey: process.env.BYBIT_API_KEY, apiSecret: process.env.BYBIT_API_SECRET, tpPercent: s.leverage, slPercent: 2*s.leverage });
       return res.status(200).send('LONG executed');
     }
-    if (sig.diffBtcEma7 <= -0.3 && sig.cruzouAbaixoEma9) {
-      const result = await placeBybitOrder({ ...sig, apiKey: process.env.BYBIT_API_KEY, apiSecret: process.env.BYBIT_API_SECRET, leverage: sig.leverage, side: 'Sell' });
-      logger.info(`Ordem SHORT aberta: ${JSON.stringify(result)}`);
+    if (s.diffBtcEma7<=-0.3 && s.cruzouAbaixoEma9) {
+      await placeBybitOrder({ ...s, apiKey: process.env.BYBIT_API_KEY, apiSecret: process.env.BYBIT_API_SECRET, side:'Sell', tpPercent: s.leverage, slPercent: 2*s.leverage });
       return res.status(200).send('SHORT executed');
     }
     res.status(200).send('No action');
@@ -26,5 +25,7 @@ router.post('/webhook/signal', async (req, res) => {
     res.status(500).send('Error');
   }
 });
+
+router.post('/webhook/dominance', (req,res)=>res.send('OK'));
 
 export default router;

@@ -1,24 +1,34 @@
 import cron from 'node-cron';
-import { query } from '../databaseService.js';
-import { storeFearGreed, storeMarketMetrics } from '../coinstatsService.js';
+import { fetchAndSaveMetrics } from '../services/coinstatsService.js';
+import { query } from '../services/databaseService.js';
+import { logger } from '../logger.js';
 
 export function setupScheduler() {
-  // Purge signals older than 72h every hour
+  // A cada hora
   cron.schedule('0 * * * *', async () => {
-    await query(
-      `DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`
-    );
+    try {
+      await fetchAndSaveMetrics();
+      logger.info('📊 CoinStats metrics saved');
+    } catch(e) {
+      logger.error('Error fetching metrics', e);
+    }
   });
 
-  // Fetch Fear & Greed and BTC dominance every 5 minutes
-  cron.schedule('*/5 * * * *', async () => {
-    await storeFearGreed();
+  // Todo dia à meia-noite UTC: placeholder de retraining
+  cron.schedule('0 0 * * *', async () => {
+    logger.info('🔄 Daily retraining placeholder');
+    // aqui você chama fine-tune ou lógica de ML
   });
 
-  // Fetch market metrics every hour
-  cron.schedule('0 * * * *', async () => {
-    await storeMarketMetrics();
+  // Todo dia à meia-noite UTC: purga sinais >72h
+  cron.schedule('0 0 * * *', async () => {
+    try {
+      await query(`DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`);
+      logger.info('🧹 Old signals purged');
+    } catch(e) {
+      logger.error('Error purging signals', e);
+    }
   });
 
-  // ...add any additional cron jobs here...
+  logger.info('⏰ Scheduler started');
 }

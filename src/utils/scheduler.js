@@ -1,17 +1,24 @@
 import cron from 'node-cron';
 import { query } from '../databaseService.js';
-import { dailyRetraining } from '../tradingBot.js';
+import { storeFearGreed, storeMarketMetrics } from '../coinstatsService.js';
 
 export function setupScheduler() {
-  // 1) Deleta sinais com mais de 72h, a cada hora no minuto zero:
+  // Purge signals older than 72h every hour
   cron.schedule('0 * * * *', async () => {
     await query(
-      "DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'"
+      `DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`
     );
   });
 
-  // 2) Re-treina a IA todo dia à meia-noite UTC:
-  cron.schedule('0 0 * * *', async () => {
-    await dailyRetraining();
+  // Fetch Fear & Greed and BTC dominance every 5 minutes
+  cron.schedule('*/5 * * * *', async () => {
+    await storeFearGreed();
   });
+
+  // Fetch market metrics every hour
+  cron.schedule('0 * * * *', async () => {
+    await storeMarketMetrics();
+  });
+
+  // ...add any additional cron jobs here...
 }

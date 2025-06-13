@@ -12,13 +12,13 @@ app.use('/webhook', webhookRoutes);
 app.use('/api', apiRoutes);
 app.get('/health', (req, res) => res.sendStatus(200));
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
-app.use((err, req, res, next) => { logger.error(err); res.status(500).json({ error: 'Internal server error' }); });
+app.use((err, req, res, next) => { logger.error(err.stack || err); res.status(500).json({ error: 'Internal server error' }); });
 
 const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
 logger.info(Server running on port ${PORT});
 setupScheduler();
 });
 
-process.on('SIGTERM', () => server.close());
-process.on('SIGINT', () => server.close()
+process.on('SIGTERM', () => app.close());
+process.on('SIGINT', () => app.close());

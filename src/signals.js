@@ -1,8 +1,7 @@
-// src/signals.js
 export function parseSignal(payload) {
   return {
     ticker:             payload.ticker,
-    captured_at:        new Date(payload.time),
+    time:               new Date(payload.time),
     close:              parseFloat(payload.close),
     ema9_30:            parseFloat(payload.ema9_30),
     rsi_4h:             parseFloat(payload.rsi_4h),
@@ -13,8 +12,8 @@ export function parseSignal(payload) {
     vol_30:             parseFloat(payload.vol_30),
     vol_ma_30:          parseFloat(payload.vol_ma_30),
     diff_btc_ema7:      parseFloat(payload.diff_btc_ema7),
-    cruzou_acima_ema9:  Boolean(payload.cruzou_acima_ema9 == 1),
-    cruzou_abaixo_ema9: Boolean(payload.cruzou_abaixo_ema9 == 1),
+    cruzou_acima_ema9:  Boolean(Number(payload.cruzou_acima_ema9)),
+    cruzou_abaixo_ema9: Boolean(Number(payload.cruzou_abaixo_ema9)),
     leverage:           payload.leverage ? parseInt(payload.leverage) : 6
   };
 }

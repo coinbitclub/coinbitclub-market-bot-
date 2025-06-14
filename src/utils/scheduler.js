@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { fetchMetrics, saveMarketMetrics, fetchFearGreed, saveFearGreed } from '../services/coinstatsService.js;
+import { fetchMetrics, saveMarketMetrics, fetchFearGreed, saveFearGreed } from './services/coinstatsService.js;
 import { query } from './services/databaseService.js'; // Corrigido: import correto!
 
 export function setupScheduler() {

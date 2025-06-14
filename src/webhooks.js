@@ -3,6 +3,8 @@ import { parseSignal } from './signals.js';
 import { saveSignal } from './services/signalsService.js';
 import { parseDominance, saveDominance } from './services/coinstatsService.js';
 import { logger } from './logger.js';
+import { parseDominance, saveDominance } from './parseDominance.js';
+
 
 const router = express.Router();
 

@@ -1,20 +1,17 @@
-export function parseSignal(payload) {
-  // O Pine envia todos como string! Parse sempre.
+export function parseSignal(data) {
   return {
-    ticker:              payload.ticker,
-    captured_at:         payload.time ? new Date(payload.time) : new Date(),
-    close:               parseFloat(payload.close),
-    ema9_30:             parseFloat(payload.ema9_30),
-    rsi_4h:              parseFloat(payload.rsi_4h),
-    rsi_15:              parseFloat(payload.rsi_15),
-    momentum_15:         parseFloat(payload.momentum_15),
-    atr_30:              parseFloat(payload.atr_30),
-    atr_pct_30:          parseFloat(payload.atr_pct_30),
-    vol_30:              parseFloat(payload.vol_30),
-    vol_ma_30:           parseFloat(payload.vol_ma_30),
-    diff_btc_ema7:       parseFloat(payload.diff_btc_ema7),
-    cruzou_acima_ema9:   payload.cruzou_acima_ema9 === "1" || payload.cruzou_acima_ema9 === 1 || payload.cruzou_acima_ema9 === true,
-    cruzou_abaixo_ema9:  payload.cruzou_abaixo_ema9 === "1" || payload.cruzou_abaixo_ema9 === 1 || payload.cruzou_abaixo_ema9 === true,
-    leverage:            payload.leverage ? parseInt(payload.leverage) : 6
+    ticker: data.ticker,
+    close: Number(data.close),
+    ema9_30: Number(data.ema9_30),
+    rsi_4h: Number(data.rsi_4h),
+    rsi_15: Number(data.rsi_15),
+    momentum_15: Number(data.momentum_15),
+    atr_30: Number(data.atr_30),
+    atr_pct_30: Number(data.atr_pct_30),
+    vol_30: Number(data.vol_30),
+    vol_ma_30: Number(data.vol_ma_30),
+    diff_btc_ema7: Number(data.diff_btc_ema7),
+    leverage: Number(data.leverage),
+    signal_time: data.signal_time
   };
 }

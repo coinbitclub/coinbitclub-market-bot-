@@ -1,8 +1,8 @@
 import cron from 'node-cron';
 import { fetchMetrics, saveMarketMetrics, fetchFearGreed, saveFearGreed } from '../services/coinstatsService.js';
-import { query } from '../databaseService.js'; // ATENÇÃO: precisa importar para rodar a query!
+import { query } from '../databaseservice.js'; // ATENÇÃO: precisa importar para rodar a query!
 
-export function setupScheduler() {
+export function setupscheduler() {
   // Coleta de métricas a cada 2h
   cron.schedule('0 */2 * * *', async () => {
     try {

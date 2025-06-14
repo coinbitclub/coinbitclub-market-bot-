@@ -1,6 +1,6 @@
 import winston from 'winston';
 
-export const logger = winston.createLogger({
+export const logger = winston.createlogger({
   level: 'info',
   format: winston.format.simple(),
   transports: [

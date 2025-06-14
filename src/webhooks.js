@@ -17,14 +17,22 @@ router.post('/signal', async (req, res) => {
 
 
     // DEBUG 3: Salva no banco
-    await saveSignal(sig);
+import express from 'express';
 
-    res.status(200).json({ status: 'ok', message: 'Signal salvo com sucesso!' });
+const router = express.Router();
+
+router.post('/signal', async (req, res) => {
+  try {
+    console.log('[webhook/signal] Payload recebido:', req.body);
+    res.status(200).json({ status: 'ok', received: req.body });
   } catch (err) {
-    logger.error('[webhook/signal] ERRO:', err.stack || err);
+    console.error('[webhook/signal] Erro:', err.stack || err);
     res.status(500).json({ status: 'error', message: err.message });
   }
 });
+
+export default router;
+
 
 // ========== DOMINANCE ==========
 router.post('/dominance', async (req, res) => {

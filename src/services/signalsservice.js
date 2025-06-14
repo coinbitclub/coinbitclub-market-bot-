@@ -1,7 +1,7 @@
-import { pool } from './databaseService.js';
+import { query } from './databaseService.js';
 
 export async function saveSignal(signal) {
-  const query = `
+  const sql = `
     INSERT INTO signals (
       ticker, close, ema9_30, rsi_4h, rsi_15, momentum_15,
       atr_30, atr_pct_30, vol_30, vol_ma_30, diff_btc_ema7,
@@ -15,7 +15,7 @@ export async function saveSignal(signal) {
     signal.leverage, signal.signal_time
   ];
   try {
-    await pool.query(query, values);
+    await query(sql, values);
     console.log('Sinal salvo no banco:', signal.ticker, signal.signal_time);
   } catch (err) {
     console.error('Erro ao salvar sinal:', err);

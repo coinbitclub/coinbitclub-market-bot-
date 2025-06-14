@@ -1,4 +1,5 @@
 import { query } from './databaseService.js';
+import { logger } from '../utils/logger.js'; // Use se quiser logs padronizados
 
 export async function saveSignal(signal) {
   const sql = `
@@ -16,9 +17,9 @@ export async function saveSignal(signal) {
   ];
   try {
     await query(sql, values);
-    console.log('Sinal salvo no banco:', signal.ticker, signal.signal_time);
+    logger.info(`[saveSignal] Sinal salvo no banco: ${signal.ticker} @ ${signal.signal_time}`);
   } catch (err) {
-    console.error('Erro ao salvar sinal:', err);
+    logger.error(`[saveSignal] Erro ao salvar sinal: ${err.message}`);
     throw err;
   }
 }

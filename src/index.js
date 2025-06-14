@@ -35,3 +35,5 @@ app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
   if (setupScheduler) setupScheduler();
 });
+
+export default app;

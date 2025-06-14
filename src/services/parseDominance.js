@@ -2,6 +2,9 @@
 
 import { query } from '../databaseService.js';
 
+/**
+ * Recebe o payload da dominance e transforma em objeto padronizado para o banco.
+ */
 export function parseDominance(payload) {
   let captured_at = new Date();
   if (payload.time) {
@@ -21,18 +24,27 @@ export function parseDominance(payload) {
   };
 }
 
+/**
+ * Salva os dados de dominance no banco de dados.
+ */
 export async function saveDominance(dom) {
   const sql = `
     INSERT INTO btc_dominance_signals
       (ticker, captured_at, dominance_pct, ema7, diff_pct, signal)
     VALUES ($1, $2, $3, $4, $5, $6)
   `;
-  await query(sql, [
-    dom.ticker,
-    dom.captured_at,
-    dom.dominance_pct,
-    dom.ema7,
-    dom.diff_pct,
-    dom.signal
-  ]);
+  try {
+    await query(sql, [
+      dom.ticker,
+      dom.captured_at,
+      dom.dominance_pct,
+      dom.ema7,
+      dom.diff_pct,
+      dom.signal
+    ]);
+    console.log('Dominance salva no banco:', dom.ticker, dom.captured_at);
+  } catch (err) {
+    console.error('Erro ao salvar dominance:', err);
+    throw err;
+  }
 }

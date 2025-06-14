@@ -1,16 +1,15 @@
 import express from 'express';
 import { parseSignal } from './signals.js';
 import { saveSignal } from './services/signalsService.js';
-import { parseDominance, saveDominance } from './services/coinstatsService.js';
+import { parseDominance, saveDominance } from './services/parseDominance.js'; // Use só esse import
 import { logger } from './logger.js';
-import { parseDominance, saveDominance } from './services/parseDominance.js';
 
 const router = express.Router();
 
-// Sinal do TradingView
+// Recebe sinais do TradingView
 router.post('/signal', async (req, res, next) => {
   try {
-    console.log('SINAL RECEBIDO:', req.body); // <-- DEBUG
+    console.log('SINAL RECEBIDO:', req.body); // DEBUG
     const sig = parseSignal(req.body);
     await saveSignal(sig);
     res.status(200).send('Signal received');
@@ -20,10 +19,10 @@ router.post('/signal', async (req, res, next) => {
   }
 });
 
-// Dominância do TradingView
+// Recebe dados de dominância do TradingView
 router.post('/dominance', async (req, res, next) => {
   try {
-    console.log('DOMINANCE RECEBIDA:', req.body); // <-- DEBUG
+    console.log('DOMINANCE RECEBIDA:', req.body); // DEBUG
     const dom = parseDominance(req.body);
     await saveDominance(dom);
     res.status(200).send('Dominance received');
@@ -34,8 +33,3 @@ router.post('/dominance', async (req, res, next) => {
 });
 
 export default router;
-
-
-
-
-

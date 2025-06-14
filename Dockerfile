@@ -1,11 +1,17 @@
-FROM node:18-alpine
+# Use imagem oficial do Node.js
+FROM node:18
+
 WORKDIR /app
 
-# só deps de produção
-COPY package.json ./
-RUN npm install --omit=dev
+# Instala só o que precisa para rodar
+COPY package*.json ./
+RUN npm install
 
-# copia todo o resto do código
+# Copia o restante do código
 COPY . .
 
-CMD ["node", "src/index.js"]
+# Porta padrão para Railway/Heroku/Render
+EXPOSE 3000
+
+# Comando padrão
+CMD ["npm", "start"]

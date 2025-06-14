@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import webhookRoutes from './webhooks.js';
-import { setupScheduler } from './utils/scheduler.js';
 import { logger } from './utils/logger.js';
+import { setupScheduler } from './utils/scheduler.js';
+import signalsRouter from './routes/signals.js'; // <-- Correto
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ app.use('/webhook', (req, res, next) => {
   }
   next();
 });
-app.use('/webhook', webhookRoutes);
+app.use('/webhook', signalsRouter); // <-- Correto
 
 // Error Handler global
 app.use((err, _req, res, _next) => {
@@ -31,8 +31,12 @@ app.use((err, _req, res, _next) => {
 
 // Inicialização
 const PORT = process.env.PORT || 3000;
+
+console.log('===== BOOT COINBITCLUB MARKET-BOT ====='); // LOG de boot
+
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
+  console.log('Servidor inicializado e escutando na porta', PORT); // LOG de inicialização
   if (setupScheduler) setupScheduler();
 });
 

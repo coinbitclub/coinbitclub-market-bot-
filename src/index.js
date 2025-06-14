@@ -3,7 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import webhookRoutes from './webhooks.js';
 import { setupScheduler } from './utils/scheduler.js';
-import { logger } from './logger.js';
+import { logger } from './utils/logger.js';
 
 dotenv.config();
 const app = express();

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { query } from '../databaseService.js';
+import { query } from './databaseService.js';
 
 /**
  * Busca as métricas globais (market cap, volume, dominance, etc)

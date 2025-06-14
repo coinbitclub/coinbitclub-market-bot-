@@ -1,10 +1,5 @@
-// src/services/parseDominance.js
+import { query } from './databaseService.js';
 
-import { query } from '../databaseService.js';
-
-/**
- * Recebe o payload da dominance e transforma em objeto padronizado para o banco.
- */
 export function parseDominance(payload) {
   let captured_at = new Date();
   if (payload.time) {
@@ -24,9 +19,6 @@ export function parseDominance(payload) {
   };
 }
 
-/**
- * Salva os dados de dominance no banco de dados.
- */
 export async function saveDominance(dom) {
   const sql = `
     INSERT INTO btc_dominance_signals

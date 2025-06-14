@@ -1,4 +1,20 @@
-import { query } from './databaseService.js';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Aqui está a exportação correta!
+export async function query(sql, params) {
+  const client = await pool.connect();
+  try {
+    const res = await client.query(sql, params);
+    return res.rows;
+  } finally {
+    client.release();
+  }
+}
 
 // Busca o valor Fear & Greed mais recente do banco de dados
 export async function fetchFearGreed() {

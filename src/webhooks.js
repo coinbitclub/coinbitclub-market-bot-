@@ -1,8 +1,8 @@
 import express from 'express';
-import { parseSignal } from './signals.js';
+import { parseSignal } from './services/parseSignal.js';
 import { saveSignal } from './services/signalsService.js';
-import { logger } from './logger.js';
-// MANTENHA APENAS ESTA LINHA PARA DOMINANCE:
+import { logger } from './utils/logger.js';
+// Dominance
 import { parseDominance, saveDominance } from './services/parseDominance.js';
 
 const router = express.Router();

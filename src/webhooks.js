@@ -1,3 +1,10 @@
+router.post('/signal', async (req, res, next) => {
+  try {
+    console.log('[DEBUG] Chegou no /signal');
+    console.log('[DEBUG] Body:', req.body);
+    // ...o resto do código
+
+
 import express from 'express';
 import { parseSignal } from './services/parseSignal.js';
 import { saveSignal } from './services/signalsService.js';

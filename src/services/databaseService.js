@@ -1,4 +1,4 @@
-import { query } from '../databaseService.js';
+import { query } from './databaseService.js';
 
 // Busca o valor Fear & Greed mais recente do banco de dados
 export async function fetchFearGreed() {

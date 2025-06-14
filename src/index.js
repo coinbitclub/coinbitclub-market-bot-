@@ -40,4 +40,3 @@ app.listen(PORT, () => {
   if (setupScheduler) setupScheduler();
 });
 
-export default app;

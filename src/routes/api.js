@@ -1,68 +1,39 @@
-// src/routes/api.js
 import express from 'express';
-import axios   from 'axios';
+import { executeQuery } from '../services/databaseService.js';
 
 const router = express.Router();
-const KEY    = process.env.COINSTATS_API_KEY;
 
-// 1) Fear & Greed
+// 1) Latest Fear & Greed
 router.get('/fear-greed', async (_req, res) => {
-  try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/insights/fear-and-greed',
-      {
-        headers: {
-          accept: 'application/json',
-          'X-API-KEY': KEY
-        }
-      }
-    );
-    return res.json({ status: 'ok', data });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ status: 'error', message: err.message, details: err.response?.data });
-  }
+  const rows = await executeQuery(
+    `SELECT captured_at, index_value
+       FROM fear_greed
+      ORDER BY captured_at DESC
+      LIMIT 1`
+  );
+  res.json({ status: 'ok', data: rows[0] || null });
 });
 
-// 2) BTC Dominance (24h)
+// 2) Latest BTC Dominance
 router.get('/btc-dominance', async (_req, res) => {
-  try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
-      {
-        headers: {
-          accept: 'application/json',
-          'X-API-KEY': KEY
-        }
-      }
-    );
-    return res.json({ status: 'ok', data });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ status: 'error', message: err.message, details: err.response?.data });
-  }
+  const rows = await executeQuery(
+    `SELECT captured_at, dominance
+       FROM btc_dominance
+      ORDER BY captured_at DESC
+      LIMIT 1`
+  );
+  res.json({ status: 'ok', data: rows[0] || null });
 });
 
-// 3) Market Data
+// 3) Latest Market Metrics
 router.get('/market', async (_req, res) => {
-  try {
-    const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/markets',
-      {
-        headers: {
-          accept: 'application/json',
-          'X-API-KEY': KEY
-        }
-      }
-    );
-    return res.json({ status: 'ok', data });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ status: 'error', message: err.message, details: err.response?.data });
-  }
+  const rows = await executeQuery(
+    `SELECT captured_at, market_cap, volume_24h
+       FROM market_metrics
+      ORDER BY captured_at DESC
+      LIMIT 1`
+  );
+  res.json({ status: 'ok', data: rows[0] || null });
 });
 
 export default router;

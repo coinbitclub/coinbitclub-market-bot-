@@ -1,17 +1,1 @@
-import pkg from 'pg';
-const { Pool } = pkg;
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-export async function executeQuery(sql, params = []) {
-  const client = await pool.connect();
-  try {
-    const { rows } = await client.query(sql, params);
-    return rows;
-  } finally {
-    client.release();
-  }
-}
+import{pool}from'../db.js';import{logger}from'../logger.js';export async function executeQuery(text,params){try{return await pool.query(text,params);}catch(err){logger.error('DB Error',{code:err.code,message:err.message,text});throw err;}}

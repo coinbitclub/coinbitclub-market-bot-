@@ -9,7 +9,7 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 const mdir = path.join(process.cwd(), 'migrations');
 
-// 1) ESLint — nunca trava
+// 1) ESLint — nunca trava o fluxo
 try {
   logger.info('🔍 Running ESLint...');
   execSync('npm run lint', { stdio: 'inherit' });
@@ -17,7 +17,7 @@ try {
   logger.warn('⚠️ ESLint issues detected, continuing...');
 }
 
-// 2) Testes — nunca trava
+// 2) Testes — nunca trava o fluxo
 try {
   logger.info('🧪 Running unit tests...');
   execSync('npm test', { stdio: 'inherit' });
@@ -25,7 +25,7 @@ try {
   logger.warn('⚠️ Unit test failures detected, continuing...');
 }
 
-// 3) Migrations — só trava se migrations der erro (isso é crítico)
+// 3) Migrations — só trava se migrations der erro (crítico)
 try {
   logger.info('🔄 Executing migrations...');
   execSync(`psql ${process.env.DATABASE_URL} -f ${mdir}/001_initial_schema.sql`, { stdio: 'inherit' });
@@ -37,7 +37,7 @@ try {
   process.exit(1);
 }
 
-// 4) Start server — só trava se não conseguir subir servidor (isso é crítico)
+// 4) Start server — só trava se não conseguir subir servidor
 try {
   app.listen(port, () => logger.info(`🚀 Server running on port ${port}`));
 } catch (err) {

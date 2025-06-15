@@ -1,30 +1,9 @@
-// src/index.js
 import express from 'express';
-import dotenv from 'dotenv';
 import webhookRouter from './routes/webhook.js';
-import apiRouter     from './routes/api.js';
-
-dotenv.config();
-
-const app = express();
-app.use(express.json({ limit: '100kb' }));
-
-// Health-checks (sempre livres)
-app.get('/',      (_req, res) => res.send('OK'));
-app.get('/health',(_req, res) => res.send('OK'));
-
-// — Authentication ***APENAS*** para /webhook
-app.use('/webhook', (req, res, next) => {
-  const token = req.query.token || req.headers['x-access-token'];
-  if (process.env.WEBHOOK_TOKEN && token !== process.env.WEBHOOK_TOKEN) {
-    return res.status(401).json({ status: 'error', message: 'Unauthorized' });
-  }
-  next();
-});
-
-// Mount routers
-app.use('/webhook', webhookRouter);
-app.use('/api',     apiRouter);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Servidor inicializado na porta', PORT));
+import { logger } from './logger.js';
+const app=express();
+app.use(express.json());app.use(express.urlencoded({extended:true}));
+app.get('/health',(r,s)=>s.send('OK'));
+app.use('/webhook',webhookRouter);
+app.use((e,r,s,n)=>{logger.error('Unhandled',e);s.status(500).json({error:'Erro interno'});});
+export default app;

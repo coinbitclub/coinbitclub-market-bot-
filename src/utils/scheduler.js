@@ -1,40 +1,29 @@
 import cron from 'node-cron';
-import {
-  fetchMetrics,
-  fetchFearGreed,
-  fetchDominance
-} from '../services/coinstatsService.js';
-import {
-  executeQuery
-} from '../services/databaseService.js';
+import { fetchMetrics, fetchFearGreed, fetchDominance } from '../services/coinstatsService.js';
+import { executeQuery } from '../services/databaseService.js';
 
 export function setupScheduler() {
   // A cada 2h, coleta e salva no banco
   cron.schedule('0 */2 * * *', async () => {
     try {
       const key = process.env.COINSTATS_API_KEY;
-
-      // Fear & Greed
-      const fg = await fetchFearGreed(key);
+      await fetchFearGreed(key);
       await executeQuery(
         `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
-         VALUES (NOW(), NULL, NULL, NULL, NULL);` // ajuste conforme colunas
+         VALUES (NOW(), NULL, NULL, NULL, NULL);`
       );
-      // Markets
       const mk = await fetchMetrics(key);
       await executeQuery(
         `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
          VALUES (NOW(), NULL, $1, $2, NULL)`,
         [mk.totalMarketCap, mk.totalVolume]
       );
-      // BTC Dominance
       const bd = await fetchDominance(key);
       await executeQuery(
         `INSERT INTO coinstats_metrics (captured_at, dominance, market_cap, volume_24h, altcoin_season)
          VALUES (NOW(), $1, NULL, NULL, NULL)`,
         [bd.dominance]
       );
-
       console.log('✅ Scheduler: CoinStats salvos no DB');
     } catch (err) {
       console.error('🚨 Scheduler error:', err);

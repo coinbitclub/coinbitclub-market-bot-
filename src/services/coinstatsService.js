@@ -1,33 +1,27 @@
-import { pool } from '../db.js';
+import axios from 'axios';
 
-// Busca o valor Fear & Greed mais recente do banco de dados
-export async function fetchFearGreed() {
-  const sql = `SELECT * FROM fear_greed ORDER BY captured_at DESC LIMIT 1;`;
-  const result = await pool.query(sql, []);
-  return result.rows[0] || null;
+const BASE = 'https://openapiv1.coinstats.app';
+
+export async function fetchFearGreed(apiKey) {
+  const { data } = await axios.get(
+    `${BASE}/insights/fear-and-greed`,
+    { headers: { accept: 'application/json', 'X-API-KEY': apiKey } }
+  );
+  return data;
 }
 
-// Salva um novo registro de Fear & Greed no banco de dados
-export async function saveFearGreed(data) {
-  const sql = `
-    INSERT INTO fear_greed (value, captured_at)
-    VALUES ($1, $2)
-  `;
-  await pool.query(sql, [data.value, data.captured_at]);
+export async function fetchMetrics(apiKey) {
+  const { data } = await axios.get(
+    `${BASE}/markets`,
+    { headers: { accept: 'application/json', 'X-API-KEY': apiKey } }
+  );
+  return data;
 }
 
-// Busca métricas de mercado mais recentes do banco de dados
-export async function fetchMetrics() {
-  const sql = `SELECT * FROM market_metrics ORDER BY captured_at DESC LIMIT 1;`;
-  const result = await pool.query(sql, []);
-  return result.rows[0] || null;
-}
-
-// Salva um novo registro de métricas de mercado no banco de dados
-export async function saveMarketMetrics(metrics) {
-  const sql = `
-    INSERT INTO market_metrics (name, value, captured_at)
-    VALUES ($1, $2, $3)
-  `;
-  await pool.query(sql, [metrics.name, metrics.value, metrics.captured_at]);
+export async function fetchDominance(apiKey) {
+  const { data } = await axios.get(
+    `${BASE}/insights/btc-dominance?type=24h`,
+    { headers: { accept: 'application/json', 'X-API-KEY': apiKey } }
+  );
+  return data;
 }

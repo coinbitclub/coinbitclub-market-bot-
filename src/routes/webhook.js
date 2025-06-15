@@ -1,1 +1,72 @@
-import{Router}from'express';import{saveSignal}from'../services/signalsService.js';import{saveDominance}from'../services/dominanceService.js';import{saveRaw}from'../services/rawService.js';import{parseSignal}from'../parseSignal.js';import{parseDominance}from'../parseDominance.js';import{logger}from'../logger.js';const r=Router();r.use((q,s,n)=>{if(q.query.token!==process.env.WEBHOOK_TOKEN){logger.warn('Token inválido',{token:q.query.token});return s.status(401).json({error:'Token inválido'});}n();});r.use(async(q,s,n)=>{try{await saveRaw(q.path,{...(q.query||{}),...(q.body||{})});}catch{};n();});r.get('/signal',async(q,s)=>{logger.info('GET /signal',{query:q.query});try{const sig=parseSignal(q.query);await saveSignal(sig);s.json({status:'ok'});}catch(e){logger.error('GET /signal error',e);s.status(500).json({error:'Erro GET'});}});r.post('/signal',async(q,s)=>{logger.info('POST /signal',{body:q.body});try{const sig=parseSignal(q.body);await saveSignal(sig);s.json({status:'ok'});}catch(e){logger.error('POST /signal error',e);s.status(500).json({error:'Erro POST'});}});r.post('/dominance',async(q,s)=>{logger.info('POST /dominance',{body:q.body});try{const dom=parseDominance(q.body);await saveDominance(dom);s.json({status:'ok'});}catch(e){logger.error('POST dominance error',e);s.status(500).json({error:'Erro dominance'});}});export default r;
+// src/routes/webhook.js
+import { Router } from 'express';
+import { saveSignal } from '../services/signalsService.js';
+import { saveDominance } from '../services/dominanceService.js';
+import { saveRaw } from '../services/rawService.js';
+import { parseSignal } from '../parseSignal.js';
+import { parseDominance } from '../parseDominance.js';
+import { logger } from '../logger.js';
+
+const router = Router();
+
+// 1) Autenticação por token (query string)
+router.use((req, res, next) => {
+  const token = req.query.token;
+  if (token !== process.env.WEBHOOK_TOKEN) {
+    logger.warn('Token inválido no webhook', { token });
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+  next();
+});
+
+// 2) Auditoria: grava o JSON bruto em raw_webhook
+router.use(async (req, res, next) => {
+  try {
+    await saveRaw(req.path, { ...(req.query || {}), ...(req.body || {}) });
+  } catch (e) {
+    // falha em raw não interrompe o fluxo
+    logger.warn('Falha ao gravar raw_webhook', e);
+  }
+  next();
+});
+
+// 3) GET /webhook/signal — ex: Coinstars
+router.get('/signal', async (req, res) => {
+  logger.info('Recebido GET /signal', { query: req.query });
+  try {
+    const signal = parseSignal(req.query);
+    await saveSignal(signal);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    logger.error('Erro no GET /signal', err);
+    res.status(500).json({ error: 'Erro ao processar GET' });
+  }
+});
+
+// 4) POST /webhook/signal — ex: TradingView
+router.post('/signal', async (req, res) => {
+  logger.info('Recebido POST /signal', { body: req.body });
+  try {
+    const signal = parseSignal(req.body);
+    await saveSignal(signal);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    logger.error('Erro no POST /signal', err);
+    res.status(500).json({ error: 'Erro ao processar POST' });
+  }
+});
+
+// 5) POST /webhook/dominance — opcional
+router.post('/dominance', async (req, res) => {
+  logger.info('Recebido POST /dominance', { body: req.body });
+  try {
+    const dom = parseDominance(req.body);
+    await saveDominance(dom);
+    res.json({ status: 'ok' });
+  } catch (err) {
+    logger.error('Erro no POST /dominance', err);
+    res.status(500).json({ error: 'Erro ao processar dominância' });
+  }
+});
+
+export default router;

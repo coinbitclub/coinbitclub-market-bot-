@@ -1,4 +1,3 @@
-// bootstrap.js
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
 import path from 'path';
@@ -12,12 +11,12 @@ dotenv.config();
     const port = process.env.PORT || 3000;
     const mdir = path.join(process.cwd(), 'migrations');
 
-    // 1) ESLint — erros não bloqueiam
+    // 1) Tenta rodar o lint, mas nunca trava o processo
     try {
       logger.info('🔍 Running ESLint...');
       execSync('npm run lint', { stdio: 'inherit' });
-    } catch {
-      logger.warn('⚠️ ESLint issues detected, skipping.');
+    } catch (e) {
+      logger.warn('⚠️ ESLint issues detected, continuing bootstrap...');
     }
 
     // 2) Testes

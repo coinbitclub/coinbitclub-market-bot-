@@ -2,33 +2,39 @@ import express from 'express';
 import axios from 'axios';
 
 const router = express.Router();
-const BASE = 'https://openapiv1.coinstats.app/insights';
 
-// 1. Fear & Greed Index
+const API_KEY = 'ZFIxigBcVaCyXDL1Qp/Ork7TOL3+h07NM2f3YoSrMkI=';
+
+// Endpoints reais Coinstars:
+const FEAR_GREED_URL = `https://openapi1.coinstars.app/fear_greed?apiKey=${API_KEY}`;
+const BTC_DOMINANCE_URL = `https://openapi1.coinstars.app/btc_dominance?apiKey=${API_KEY}`;
+const MARKET_URL = `https://openapi1.coinstars.app/markets?apiKey=${API_KEY}`;
+
+// Fear & Greed Index
 router.get('/fear-greed', async (_req, res) => {
   try {
-    const { data } = await axios.get(`${BASE}/fear-and-greed`);
-    res.json({ status: 'ok', data });
+    const response = await axios.get(FEAR_GREED_URL);
+    res.json({ status: 'ok', data: response.data });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }
 });
 
-// 2. BTC Dominance
+// BTC Dominance
 router.get('/btc-dominance', async (_req, res) => {
   try {
-    const { data } = await axios.get(`${BASE}/btc-dominance`);
-    res.json({ status: 'ok', data });
+    const response = await axios.get(BTC_DOMINANCE_URL);
+    res.json({ status: 'ok', data: response.data });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }
 });
 
-// 3. Market
+// Market (métricas globais)
 router.get('/market', async (_req, res) => {
   try {
-    const { data } = await axios.get(`${BASE}/market`);
-    res.json({ status: 'ok', data });
+    const response = await axios.get(MARKET_URL);
+    res.json({ status: 'ok', data: response.data });
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
   }

@@ -12,9 +12,10 @@ app.use(express.json({ limit: '100kb' }));
 app.get('/', (_req, res) => res.send('OK'));
 app.get('/health', (_req, res) => res.send('OK'));
 
-// Middleware de token nas rotas /webhook e /api
+// Middleware de autenticação por token (opcional, pode comentar se não usar)
 app.use(['/webhook', '/api'], (req, res, next) => {
-  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
+  const token = req.query.token || req.headers['x-access-token'];
+  if (process.env.WEBHOOK_TOKEN && token !== process.env.WEBHOOK_TOKEN) {
     return res.status(401).json({ status: 'error', message: 'Unauthorized' });
   }
   next();
@@ -28,5 +29,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('Servidor inicializado na porta', PORT);
 });
-
-

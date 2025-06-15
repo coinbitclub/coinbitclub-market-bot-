@@ -1,39 +1,47 @@
+// src/routes/api.js
 import express from 'express';
-import { executeQuery } from '../services/databaseService.js';
+import axios   from 'axios';
 
 const router = express.Router();
+const KEY    = process.env.COINSTATS_API_KEY;
 
-// 1) Latest Fear & Greed
+// 1) Fear & Greed
 router.get('/fear-greed', async (_req, res) => {
-  const rows = await executeQuery(
-    `SELECT captured_at, index_value
-       FROM fear_greed
-      ORDER BY captured_at DESC
-      LIMIT 1`
-  );
-  res.json({ status: 'ok', data: rows[0] || null });
+  try {
+    const { data } = await axios.get(
+      'https://openapiv1.coinstats.app/insights/fear-and-greed',
+      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    );
+    res.json({ status: 'ok', data });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
-// 2) Latest BTC Dominance
+// 2) BTC Dominance
 router.get('/btc-dominance', async (_req, res) => {
-  const rows = await executeQuery(
-    `SELECT captured_at, dominance
-       FROM btc_dominance
-      ORDER BY captured_at DESC
-      LIMIT 1`
-  );
-  res.json({ status: 'ok', data: rows[0] || null });
+  try {
+    const { data } = await axios.get(
+      'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
+      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    );
+    res.json({ status: 'ok', data });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
-// 3) Latest Market Metrics
+// 3) Markets
 router.get('/market', async (_req, res) => {
-  const rows = await executeQuery(
-    `SELECT captured_at, market_cap, volume_24h
-       FROM market_metrics
-      ORDER BY captured_at DESC
-      LIMIT 1`
-  );
-  res.json({ status: 'ok', data: rows[0] || null });
+  try {
+    const { data } = await axios.get(
+      'https://openapiv1.coinstats.app/markets',
+      { headers: { accept: 'application/json', 'X-API-KEY': KEY } }
+    );
+    res.json({ status: 'ok', data });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
 });
 
 export default router;

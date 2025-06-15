@@ -5,15 +5,15 @@ const router = express.Router();
 
 const COINSTATS_API_KEY = process.env.COINSTATS_API_KEY;
 
-// BTC Dominance
+// BTC Dominance (24h)
 router.get('/btc-dominance', async (req, res) => {
   try {
     const { token } = req.query;
-    if (token !== process.env.WEBHOOK_TOKEN) {
+    if (process.env.WEBHOOK_TOKEN && token !== process.env.WEBHOOK_TOKEN) {
       return res.status(401).json({ status: 'error', message: 'Unauthorized' });
     }
     const { data } = await axios.get(
-      'https://openapiv1.coinstats.app/insights/btc-dominance',
+      'https://openapiv1.coinstats.app/insights/btc-dominance?type=24h',
       {
         headers: {
           'accept': 'application/json',
@@ -31,7 +31,7 @@ router.get('/btc-dominance', async (req, res) => {
 router.get('/fear-greed', async (req, res) => {
   try {
     const { token } = req.query;
-    if (token !== process.env.WEBHOOK_TOKEN) {
+    if (process.env.WEBHOOK_TOKEN && token !== process.env.WEBHOOK_TOKEN) {
       return res.status(401).json({ status: 'error', message: 'Unauthorized' });
     }
     const { data } = await axios.get(
@@ -49,11 +49,11 @@ router.get('/fear-greed', async (req, res) => {
   }
 });
 
-// Markets
+// Market data
 router.get('/market', async (req, res) => {
   try {
     const { token } = req.query;
-    if (token !== process.env.WEBHOOK_TOKEN) {
+    if (process.env.WEBHOOK_TOKEN && token !== process.env.WEBHOOK_TOKEN) {
       return res.status(401).json({ status: 'error', message: 'Unauthorized' });
     }
     const { data } = await axios.get(

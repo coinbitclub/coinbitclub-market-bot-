@@ -1,16 +1,19 @@
-// .eslintrc.cjs
 module.exports = {
   env: {
-    node: true,
     es2021: true,
+    node: true,
     jest: true
   },
-  extends: ["eslint:recommended"],
+  extends: [
+    'eslint:recommended'
+  ],
   parserOptions: {
     ecmaVersion: 12,
-    sourceType: "module"
+    sourceType: 'module'
   },
   rules: {
-    "no-console": "off"
+    'no-unused-vars': 'warn',
+    'no-empty': 'warn',
+    'no-extra-semi': 'warn'
   }
 };

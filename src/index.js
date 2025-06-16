@@ -3,7 +3,6 @@ import webhookRoutes from './routes/webhook.js';
 
 const app = express();
 app.use(express.json());
-
 app.use('/webhook', webhookRoutes);
 
 const PORT = process.env.PORT || 3000;

@@ -1,15 +1,15 @@
 import express from 'express';
 import { saveSignal } from '../services/signalsService.js';
-// Adicione outros imports se necessário
+// ... (demais imports caso precise)
 
 const router = express.Router();
 
-// Exemplo de rota GET (apague ou ajuste se já existe!)
+// GET /webhook/signal
 router.get('/signal', (req, res) => {
   res.json({ msg: 'GET /webhook/signal funcionando' });
 });
 
-// Exemplo de rota POST (ajuste conforme sua lógica)
+// POST /webhook/signal
 router.post('/signal', async (req, res) => {
   try {
     const result = await saveSignal(req.body);

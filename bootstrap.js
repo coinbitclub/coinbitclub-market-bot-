@@ -25,18 +25,6 @@ try {
   logger.warn('⚠️ Unit test failures detected, continuing...');
 }
 
-// 3) Migrations — só trava se migrations der erro (crítico)
-try {
-  logger.info('🔄 Executing migrations...');
-  execSync(`psql "${process.env.DATABASE_URL}" -f ${mdir}/001_initial_schema.sql`, { stdio: 'inherit' });
-  execSync(`psql "${process.env.DATABASE_URL}" -f ${mdir}/002_add_indexes.sql`,    { stdio: 'inherit' });
-  execSync(`psql "${process.env.DATABASE_URL}" -f ${mdir}/003_fix_signals_schema.sql`, { stdio: 'inherit' });
-  logger.info('✅ Migrations completed');
-} catch (err) {
-  logger.error('❌ Migration error', err);
-  process.exit(1);
-}
-
 // 4) Start server — só trava se não conseguir subir servidor
 try {
   app.listen(port, () => logger.info(`🚀 Server running on port ${port}`));

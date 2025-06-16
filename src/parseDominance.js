@@ -1,13 +1,13 @@
 // src/parseDominance.js
-
-/**
- * Recebe raw (body ou query) e devolve
- * o formato que o dominanceService espera.
- */
 export function parseDominance(raw) {
   return {
-    timestamp: raw.timestamp ?? raw.time,
-    btc_dom:   raw.btc_dom   ?? raw.btcDominance ?? null,
-    eth_dom:   raw.eth_dom   ?? raw.ethDominance ?? null
+    time:    raw.time,
+    btc_d:   raw.btc_d   ?? null,
+    eth_d:   raw.eth_d   ?? null,
+    usdt_d:  raw.usdt_d  ?? null,
+    usdc_d:  raw.usdc_d  ?? null,
+    others:  raw.others  ?? null,
+    total:   raw.total   ?? null,
+    comment: raw.comment ?? null
   };
 }

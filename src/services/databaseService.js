@@ -1,1 +1,10 @@
-import{pool}from'../db.js';import{logger}from'../logger.js';export async function executeQuery(text,params){try{return await pool.query(text,params);}catch(err){logger.error('DB Error',{code:err.code,message:err.message,text});throw err;}}
+import { Pool } from "pg";
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+export default pool;

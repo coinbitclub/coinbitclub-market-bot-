@@ -1,6 +1,6 @@
 import express from 'express';
 import webhookRoutes from './routes/webhook.js';
-import './maintenance/cleanupAndConsolidate.js'; // Se estiver usando
+import './services/cleanupService.js';
 import './cron.js';
 
 import { cleanupDatabase } from './services/cleanupService.js'; // IMPORTANTE para debug

@@ -2,8 +2,8 @@ import express from 'express';
 import webhookRoutes from './routes/webhook.js';
 import './services/cleanupService.js';
 import './cron.js';
+import { cleanupDatabase } from './services/cleanupService.js'; // ok para named export!
 
-import { cleanupDatabase } from './services/cleanupService.js'; // IMPORTANTE para debug
 
 const app = express();
 

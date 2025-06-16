@@ -1,15 +1,18 @@
 import express from 'express';
 const router = express.Router();
 
-// GET simples para teste
+// Healthcheck GET
 router.get('/signal', (req, res) => {
-  res.json({ msg: 'GET /webhook/signal working' });
+  res.json({ msg: "GET /webhook/signal working" });
 });
 
-// POST simples para teste no Railway
+// Debug POST: só retorna o recebido
 router.post('/signal', (req, res) => {
-  console.log('POST /webhook/signal', req.body);
-  res.status(200).json({ msg: 'POST OK', received: req.body });
+  console.log('POST recebido em /webhook/signal:', req.body);
+  res.json({
+    msg: "POST /webhook/signal funcionando",
+    body: req.body
+  });
 });
 
 export default router;

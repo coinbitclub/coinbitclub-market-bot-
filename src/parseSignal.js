@@ -1,10 +1,4 @@
 // src/parseSignal.js
-
-/**
- * Recebe o objeto raw (body ou query) e
- * retorna um DTO com exatamente os campos
- * que o signalsService espera.
- */
 export function parseSignal(raw) {
   return {
     ticker:      raw.ticker,

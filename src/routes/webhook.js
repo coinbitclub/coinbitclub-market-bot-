@@ -1,29 +1,44 @@
 import express from 'express';
-import { saveSignal } from '../services/signalsService.js';
-
 const router = express.Router();
 
-// POST /webhook/signal
-router.post('/signal', async (req, res) => {
-  try {
-    const data = req.body;
-    // Aceita time em ISO ou timestamp numérico
-    if (typeof data.time === 'string' && !isNaN(Date.parse(data.time))) {
-      data.time = new Date(data.time);
-    } else if (typeof data.time === 'number') {
-      data.time = new Date(data.time * 1000);
-    }
-    await saveSignal(data);
-    res.status(200).json({ ok: true });
-  } catch (err) {
-    console.error('Webhook POST error', err);
-    res.status(500).json({ error: err.message });
-  }
+// Modelo seguro para GET (healthcheck/teste)
+router.get('/signal', (req, res) => {
+  res.json({ status: 'ok', message: 'GET /webhook/signal está ativo' });
 });
 
-// GET /webhook/signal
-router.get('/signal', async (req, res) => {
-  res.status(200).json({ msg: 'GET /webhook/signal working' });
+// Modelo robusto para POST
+router.post('/signal', async (req, res) => {
+  try {
+    // Log para debug
+    console.log('Payload recebido:', req.body);
+
+    // Exemplo de extração dos dados esperados
+    const {
+      ticker, time, close, ema9_30, rsi_4h, rsi_15, momentum_15,
+      atr_30, atr_pct_30, vol_30, vol_ma_30
+    } = req.body;
+
+    // Validação rápida dos campos obrigatórios
+    if (!ticker || !time) {
+      return res.status(400).json({ error: 'ticker e time são obrigatórios' });
+    }
+
+    // Exemplo: converte time se vier em string para ISO/Date (opcional)
+    let timeObj = time;
+    if (typeof time === 'string' && time.length > 10) {
+      timeObj = new Date(time);
+    }
+
+    // Aqui você pode salvar no banco, por exemplo:
+    // await saveSignal({ ... });
+
+    // Retorno de sucesso
+    return res.status(200).json({ status: 'ok', received: req.body });
+
+  } catch (error) {
+    console.error('Erro em POST /webhook/signal:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
 });
 
 export default router;

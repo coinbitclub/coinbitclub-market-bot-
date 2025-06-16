@@ -3,17 +3,13 @@ import webhookRoutes from './routes/webhook.js';
 
 const app = express();
 
+// Middleware para receber JSON
 app.use(express.json());
 
 // Rotas
 app.use('/webhook', webhookRoutes);
 
-// Healthcheck raiz (opcional)
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', msg: 'API online' });
-});
-
-// Use SEMPRE process.env.PORT para Railway!
+// Porta dinâmica para Railway
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

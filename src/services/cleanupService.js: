@@ -1,65 +1,63 @@
-import { pool } from '../db.js'
+// src/services/cleanupService.js
 
-// Limpa registros com mais de 72h e faz o fechamento diário das principais tabelas
-export async function cleanupDatabase() {
-  // Limpeza signals
-  await pool.query(`
-    DELETE FROM signals
-    WHERE created_at < NOW() - INTERVAL '72 HOURS'
-  `)
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
-  // Fechamento diário signals
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+// Limpeza dos registros antigos (mais de 72h)
+export async function cleanupOldRecords() {
+  // Exemplo para tabela signals
+  await pool.query(`DELETE FROM signals WHERE created_at < NOW() - INTERVAL '72 hours'`);
+  await pool.query(`DELETE FROM dominance WHERE created_at < NOW() - INTERVAL '72 hours'`);
+  await pool.query(`DELETE FROM fear_greed WHERE created_at < NOW() - INTERVAL '72 hours'`);
+}
+
+// Consolida o fechamento diário
+export async function consolidateDailyData() {
+  // Adapte a lógica para signals, dominance, fear_greed etc.
+  // Exemplo para signals:
   await pool.query(`
     INSERT INTO signals_daily (ticker, date, avg_close, max_close, min_close)
     SELECT
       ticker,
-      DATE_TRUNC('day', created_at) AS date,
-      AVG(close) AS avg_close,
-      MAX(close) AS max_close,
-      MIN(close) AS min_close
+      CURRENT_DATE,
+      AVG(close),
+      MAX(close),
+      MIN(close)
     FROM signals
-    WHERE created_at < NOW()
-    GROUP BY ticker, date
+    WHERE created_at::date = CURRENT_DATE - INTERVAL '1 day'
+    GROUP BY ticker
     ON CONFLICT (ticker, date) DO NOTHING
-  `)
+  `);
 
-  // Limpeza dominance
-  await pool.query(`
-    DELETE FROM dominance
-    WHERE created_at < NOW() - INTERVAL '72 HOURS'
-  `)
-
-  // Fechamento diário dominance
+  // Exemplo para dominance:
   await pool.query(`
     INSERT INTO dominance_daily (date, avg_btc_dominance, max_btc_dominance, min_btc_dominance)
     SELECT
-      DATE_TRUNC('day', created_at) AS date,
-      AVG(btc_dominance) AS avg_btc_dominance,
-      MAX(btc_dominance) AS max_btc_dominance,
-      MIN(btc_dominance) AS min_btc_dominance
+      CURRENT_DATE,
+      AVG(btc_dominance),
+      MAX(btc_dominance),
+      MIN(btc_dominance)
     FROM dominance
-    WHERE created_at < NOW()
-    GROUP BY date
+    WHERE created_at::date = CURRENT_DATE - INTERVAL '1 day'
     ON CONFLICT (date) DO NOTHING
-  `)
+  `);
 
-  // Limpeza fear_greed
-  await pool.query(`
-    DELETE FROM fear_greed
-    WHERE created_at < NOW() - INTERVAL '72 HOURS'
-  `)
-
-  // Fechamento diário fear_greed
+  // Exemplo para fear_greed:
   await pool.query(`
     INSERT INTO fear_greed_daily (date, avg_value, max_value, min_value)
     SELECT
-      DATE_TRUNC('day', created_at) AS date,
-      AVG(value) AS avg_value,
-      MAX(value) AS max_value,
-      MIN(value) AS min_value
+      CURRENT_DATE,
+      AVG(value),
+      MAX(value),
+      MIN(value)
     FROM fear_greed
-    WHERE created_at < NOW()
-    GROUP BY date
+    WHERE created_at::date = CURRENT_DATE - INTERVAL '1 day'
     ON CONFLICT (date) DO NOTHING
-  `)
+  `);
 }

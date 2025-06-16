@@ -1,5 +1,6 @@
 import express from 'express';
 import webhookRoutes from './routes/webhook.js';
+import './maintenance/cleanupAndConsolidate.js';
 
 const app = express();
 

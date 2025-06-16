@@ -1,64 +1,34 @@
-// src/routes/webhook.js
-import { Router } from 'express';
-import { saveSignal } from '../services/signalsService.js';
-import { saveDominance } from '../services/dominanceService.js';
-import { saveRaw } from '../services/rawService.js';
+import express from 'express';
 import { parseSignal } from '../parseSignal.js';
-import { parseDominance } from '../parseDominance.js';
-import { logger } from '../logger.js';
+import { saveSignal } from '../services/signalsService.js';
 
-const router = Router();
+const router = express.Router();
 
-router.use((req, res, next) => {
-  if (req.query.token !== process.env.WEBHOOK_TOKEN) {
-    logger.warn('Token inválido no webhook', { token: req.query.token });
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-  next();
-});
-
-router.use(async (req, res, next) => {
+router.post('/signal', async (req, res) => {
   try {
-    await saveRaw(req.path, { ...(req.query||{}), ...(req.body||{}) });
+    const token = req.query.token;
+    if (token !== process.env.WEBHOOK_TOKEN) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    const signal = parseSignal(req.body);
+    await saveSignal(signal);
+    res.status(200).json({ success: true });
   } catch (e) {
-    logger.warn('Falha ao gravar raw_webhook', e);
+    res.status(500).json({ error: e.message });
   }
-  next();
 });
 
 router.get('/signal', async (req, res) => {
-  logger.info('GET /signal', { query: req.query });
   try {
+    const token = req.query.token;
+    if (token !== process.env.WEBHOOK_TOKEN) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
     const signal = parseSignal(req.query);
     await saveSignal(signal);
-    res.json({ status: 'ok' });
-  } catch (err) {
-    logger.error('Erro no GET /signal', err);
-    res.status(500).json({ error: 'Erro ao processar GET' });
-  }
-});
-
-router.post('/signal', async (req, res) => {
-  logger.info('POST /signal', { body: req.body });
-  try {
-    const signal = parseSignal(req.body);
-    await saveSignal(signal);
-    res.json({ status: 'ok' });
-  } catch (err) {
-    logger.error('Erro no POST /signal', err);
-    res.status(500).json({ error: 'Erro ao processar POST' });
-  }
-});
-
-router.post('/dominance', async (req, res) => {
-  logger.info('POST /dominance', { body: req.body });
-  try {
-    const dom = parseDominance(req.body);
-    await saveDominance(dom);
-    res.json({ status: 'ok' });
-  } catch (err) {
-    logger.error('Erro no POST /dominance', err);
-    res.status(500).json({ error: 'Erro ao processar dominância' });
+    res.status(200).json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 

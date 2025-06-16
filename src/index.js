@@ -3,22 +3,18 @@ import webhookRoutes from './routes/webhook.js';
 
 const app = express();
 
-// Fundamental: habilita JSON no body
 app.use(express.json());
 
-// Log de debug de todas as requisições recebidas
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  next();
-});
-
+// Rotas
 app.use('/webhook', webhookRoutes);
 
-// Resposta para rota raiz, útil para healthcheck
-app.get('/', (req, res) => res.send('Market-bot API online'));
+// Healthcheck raiz (opcional)
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', msg: 'API online' });
+});
 
-// Sobe servidor na porta correta (Railway usa process.env.PORT!)
+// Use SEMPRE process.env.PORT para Railway!
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Market-bot running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

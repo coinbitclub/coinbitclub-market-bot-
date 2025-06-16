@@ -1,35 +1,16 @@
 import express from 'express';
-import { parseSignal } from '../parseSignal.js';
-import { saveSignal } from '../services/signalsService.js';
 
 const router = express.Router();
 
-router.post('/signal', async (req, res) => {
-  try {
-    const token = req.query.token;
-    if (token !== process.env.WEBHOOK_TOKEN) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
-    const signal = parseSignal(req.body);
-    await saveSignal(signal);
-    res.status(200).json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+// Handler para GET /webhook/signal
+router.get('/signal', (req, res) => {
+  res.status(200).json({ status: "ok", msg: "GET recebido com sucesso!" });
 });
 
-router.get('/signal', async (req, res) => {
-  try {
-    const token = req.query.token;
-    if (token !== process.env.WEBHOOK_TOKEN) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
-    const signal = parseSignal(req.query);
-    await saveSignal(signal);
-    res.status(200).json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+// Handler para POST /webhook/signal
+router.post('/signal', (req, res) => {
+  console.log('POST recebido:', req.body);
+  res.status(200).json({ status: "ok", msg: "POST recebido com sucesso!", data: req.body });
 });
 
 export default router;

@@ -1,22 +1,15 @@
-// src/index.js
 import express from 'express';
+import dotenv from 'dotenv';
 import webhookRouter from './routes/webhook.js';
-import { logger } from './logger.js';
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Healthcheck
-app.get('/health', (req, res) => res.send('OK'));
-
-// __Aqui__ usamos somente o routes/webhook.js
 app.use('/webhook', webhookRouter);
 
-// Global error handler
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error', err);
-  res.status(500).json({ error: 'Erro interno do servidor' });
+app.get('/', (req, res) => {
+  res.send('CoinBitClub Market Bot - OK');
 });
 
 export default app;

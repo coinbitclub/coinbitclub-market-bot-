@@ -6,12 +6,11 @@
   "scripts": {
     "lint": "eslint src/**/*.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
-    "start": "node src/index.js"
+    "start": "node bootstrap.js"
   },
   "jest": {
     "testEnvironment": "node",
-    "extensionsToTreatAsEsm": [".js"],
-    "transform": {}
+    "extensionsToTreatAsEsm": [".js"]
   },
   "dependencies": {
     "dotenv": "^16.x",

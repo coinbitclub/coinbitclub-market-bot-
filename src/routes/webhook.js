@@ -1,13 +1,10 @@
 import express from 'express';
-import { saveSignal } from '../services/signalsService.js';
-
 const router = express.Router();
 
-// Exemplo de rota, ajuste conforme sua lógica
-router.get('/signal', (req, res) => {
-  res.json({ msg: 'GET /webhook/signal funcionando' });
+router.post('/signal', (req, res) => {
+  // Exemplo de log simples
+  console.log('Sinal recebido:', req.body);
+  res.status(200).json({ success: true });
 });
-
-// Outras rotas aqui
 
 export default router;

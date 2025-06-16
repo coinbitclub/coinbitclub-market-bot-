@@ -5,11 +5,12 @@
   "main": "bootstrap.js",
   "scripts": {
     "lint": "eslint src/**/*.js",
-    "test": "jest",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
     "start": "node src/index.js"
   },
   "jest": {
     "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".js"],
     "transform": {}
   },
   "dependencies": {
@@ -21,10 +22,4 @@
     "eslint": "^8.x",
     "jest": "^29.x"
   }
-  "type": "module",
-"jest": {
-  "testEnvironment": "node",
-  "extensionsToTreatAsEsm": [".js"],
-  "transform": {}
-}
 }

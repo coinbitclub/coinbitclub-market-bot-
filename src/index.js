@@ -1,5 +1,7 @@
 import express from 'express';
 import webhookRoutes from './routes/webhook.js';
+import './cron/fetchCoinStats.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;

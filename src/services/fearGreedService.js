@@ -1,9 +1,7 @@
 // src/services/fearGreedService.js
 
-// Stub temporário - remove quando implementar de verdade!
-export async function getFearGreedData() {
-  return {
-    value: 50,
-    timestamp: new Date().toISOString()
-  };
+export async function saveFearGreed(data) {
+  // Salve os dados de fear & greed no banco de dados aqui
+  // Por enquanto é apenas um stub para evitar erro de import
+  console.log('Stub: Salvando Fear & Greed:', data);
 }

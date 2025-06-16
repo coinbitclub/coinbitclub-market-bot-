@@ -1,1 +1,8 @@
-import{executeQuery}from'./databaseService.js';import{logger}from'../logger.js';export async function saveDominance(d){const t=`INSERT INTO dominance(timestamp,btc_dom,eth_dom)VALUES($1,$2,$3)`;await executeQuery(t,[d.timestamp,d.btc_dom,d.eth_dom]);logger.info('Dominance saved',{timestamp:d.timestamp});}
+import db from '../db.js';
+
+export async function saveDominance(data) {
+  await db.query(
+    `INSERT INTO dominance (btc_dominance, date) VALUES ($1, $2)`,
+    [data.btc_dominance, data.date]
+  );
+}

@@ -1,7 +1,8 @@
-// src/services/fearGreedService.js
+import db from '../db.js';
 
 export async function saveFearGreed(data) {
-  // Salve os dados de fear & greed no banco de dados aqui
-  // Por enquanto é apenas um stub para evitar erro de import
-  console.log('Stub: Salvando Fear & Greed:', data);
+  await db.query(
+    `INSERT INTO fear_greed (value, classification, date) VALUES ($1, $2, $3)`,
+    [data.value, data.classification, data.date]
+  );
 }

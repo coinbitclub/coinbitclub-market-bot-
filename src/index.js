@@ -1,22 +1,15 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import webhookRoutes from './routes/webhook.js';
-import './cron/fetchCoinStats.js';
+import './cronJobs.js';
 
-
+dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware para receber JSON!
 app.use(express.json());
-
-// Todas as rotas de webhook
 app.use('/webhook', webhookRoutes);
 
-// Rota healthcheck (opcional)
-app.get('/', (req, res) => {
-  res.send('Server OK');
-});
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

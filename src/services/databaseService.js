@@ -1,14 +1,24 @@
-import pg from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
+import dotenv from 'dotenv';
+dotenv.config();
 
-const pool = new pg.Pool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.DATABASE_SSL === 'true'
+    ? { rejectUnauthorized: false }
+    : undefined
 });
 
-export async function executeQuery(text, params) {
+// Exportação padrão do pool (default) — compatível com os outros arquivos
+export default pool;
+
+// Exportação da função query — para quem importa { query }
+export async function query(text, params) {
   const client = await pool.connect();
   try {
-    return await client.query(text, params);
+    const res = await client.query(text, params);
+    return res;
   } finally {
     client.release();
   }

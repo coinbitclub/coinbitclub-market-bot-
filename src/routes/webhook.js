@@ -1,35 +1,40 @@
-cat > src/routes/webhook.js << 'EOF'
+// src/routes/webhook.js
 import express from 'express';
-import { parseSignal } from '../services/parseSignal.js';
-import { saveSignal }  from '../services/signalsService.js';
-import { parseDominance } from '../services/parseDominance.js';
-import { saveDominance }  from '../services/dominanceService.js';
+import { parseSignal } from '../parseSignal.js';
+import { saveSignal } from '../services/signalsService.js';
+import { parseDominance } from '../parseDominance.js';
+import { saveDominance } from '../services/dominanceService.js';
 
 const router = express.Router();
 
-// POST /webhook/signal
-router.post('/signal', async (req, res) => {
+// Middleware: extrai userId de JWT ou query
+router.use((req, _res, next) => {
+  req.userId = req.query.userId || (req.user && req.user.id);
+  next();
+});
+
+router.post('/signal', async (req, res, next) => {
   try {
-    const sig = parseSignal(req.body);
-    await saveSignal(sig);
-    return res.status(200).json({ status: 'ok' });
+    // 1) Log raw
+    console.log('[raw webhook/signal]', req.body);
+    // 2) Parse e salva
+    const signal = parseSignal(req.body);
+    await saveSignal(req.userId, signal);
+    res.json({ status: 'ok' });
   } catch (err) {
-    console.error('[webhook/signal]', err);
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
-// POST /webhook/dominance
-router.post('/dominance', async (req, res) => {
+router.post('/dominance', async (req, res, next) => {
   try {
+    console.log('[raw webhook/dominance]', req.body);
     const dom = parseDominance(req.body);
-    await saveDominance(dom);
-    return res.status(200).json({ status: 'ok' });
+    await saveDominance(req.userId, dom);
+    res.json({ status: 'ok' });
   } catch (err) {
-    console.error('[webhook/dominance]', err);
-    return res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
 export default router;
-EOF

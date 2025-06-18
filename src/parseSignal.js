@@ -1,16 +1,20 @@
 // src/parseSignal.js
-export function parseSignal(raw) {
+export function parseSignal(body) {
   return {
-    ticker:      raw.ticker,
-    time:        raw.time,
-    close:       raw.close,
-    ema9_30:     raw.ema9_30   ?? null,
-    rsi_4h:      raw.rsi_4h    ?? null,
-    rsi_15:      raw.rsi_15    ?? null,
-    momentum_15: raw.momentum_15?? null,
-    atr_30:      raw.atr_30    ?? null,
-    atr_pct_30:  raw.atr_pct_30?? null,
-    vol_30:      raw.vol_30    ?? null,
-    vol_ma_30:   raw.vol_ma_30 ?? null
+    ticker: body.ticker,
+    time: new Date(body.time),
+    close: parseFloat(body.close),
+    ema9: parseFloat(body.ema9_30),
+    rsi4h: parseFloat(body.rsi_4h),
+    rsi15: parseFloat(body.rsi_15),
+    momentum15: parseFloat(body.momentum_15),
+    atr30: parseFloat(body.atr_30),
+    atrPct30: parseFloat(body.atr_pct_30),
+    vol30: parseFloat(body.vol_30),
+    volMa30: parseFloat(body.vol_ma_30),
+    diffBtcEma7: parseFloat(body.diff_btc_ema7),
+    cruzouAcimaEma9: !!body.cruzou_acima_ema9,
+    cruzouAbaixoEma9: !!body.cruzou_abaixo_ema9,
+    leverage: parseInt(body.leverage, 10),
   };
 }

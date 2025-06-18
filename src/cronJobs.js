@@ -1,6 +1,27 @@
 import cron from 'node-cron';
-import { fetchAndSaveDominance, fetchAndSaveMarkets, fetchAndSaveFearGreed } from './services/coinStatsService.js';
+import {
+  fetchAndSaveDominance,
+  fetchAndSaveFearGreed,
+  fetchAndSaveMarkets
+} from './services/coinstatsService.js';
 
-cron.schedule('*/30 * * * *', fetchAndSaveDominance); // Dominance cada 30min
-cron.schedule('*/30 * * * *', fetchAndSaveMarkets);   // Markets cada 30min
-cron.schedule('*/30 * * * *', fetchAndSaveFearGreed); // Fear & Greed cada 30min
+// dispara as jobs de coleta dos dados da CoinStats
+export function setupScheduler() {
+  // a cada minuto, coleta BTC Dominance
+  cron.schedule('* * * * *', () => {
+    console.log('[CRON] fetchAndSaveDominance');
+    fetchAndSaveDominance();
+  });
+
+  // a cada 5 minutos, coleta mercados
+  cron.schedule('*/5 * * * *', () => {
+    console.log('[CRON] fetchAndSaveMarkets');
+    fetchAndSaveMarkets();
+  });
+
+  // todo início de hora, coleta Fear & Greed
+  cron.schedule('0 * * * *', () => {
+    console.log('[CRON] fetchAndSaveFearGreed');
+    fetchAndSaveFearGreed();
+  });
+}

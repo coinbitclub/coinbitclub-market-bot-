@@ -1,15 +1,15 @@
-export async function placeBybitOrder(_opts) {
-  // implementar chamada à API Bybit
-}
+// src/services/exchangeService.js
+import { getBybitCredentials } from './databaseService.js';
+import { RestClient as BybitRestClient } from 'bybit-api'; // Exemplo de SDK
 
-export async function placeBinanceOrder(_opts) {
-  // implementar chamada à API Binance
-}
-
-export async function fetchOpenPositions() {
-  return [];
-}
-
-export async function closePosition(_id) {
-  // implementar lógica de fechamento de posição
+/**
+ * Cria um client Bybit configurado com as credenciais do usuário.
+ */
+export async function createBybitClientForUser(userId) {
+  const { api_key, api_secret } = await getBybitCredentials(userId);
+  return new BybitRestClient({
+    key: api_key,
+    secret: api_secret,
+    testnet: false,
+  });
 }

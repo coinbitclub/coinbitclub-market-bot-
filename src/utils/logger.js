@@ -1,6 +1,11 @@
-export const logger = {
-  info: (...msg)  => console.log('[INFO]',  ...msg),
-  warn: (...msg)  => console.warn('[WARN]',  ...msg),
-  error: (...msg) => console.error('[ERROR]', ...msg),
-  debug: (...msg) => console.debug('[DEBUG]', ...msg),
-};
+// src/utils/logger.js
+import pino from 'pino';
+
+const logger = pino({
+  transport: {
+    target: 'pino-pretty',
+    options: { colorize: true }
+  }
+});
+
+export default logger;

@@ -1,36 +1,41 @@
 // src/services/coinstatsService.js
 import axios from 'axios';
+import logger from '../utils/logger.js';
 import { query } from './databaseService.js';
 
-const API_KEY = process.env.COINSTATS_API_KEY;
-const BASE = 'https://openapiv1.coinstats.app';
+const BASE = 'https://api.coinstats.app/public/v1';
 
-async function get(path) {
-  return axios.get(BASE + path, {
-    headers: { 'X-API-KEY': API_KEY }
-  }).then(r => r.data);
-}
-
+// Dominância
 export async function fetchAndSaveDominance() {
-  const data = await get('/insights/btc-dominance');
-  // processa data.data (array de [ts, value])
-  // insere em dominance_daily
+  const res = await axios.get(`${BASE}/global-stats`, {
+    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
+  });
+  const { btcDominance } = res.data;
+  logger.info('Fetched dominance', { btcDominance });
+  await query(
+    'INSERT INTO dominance_daily(time, dominance) VALUES($1, $2)',
+    [new Date().toISOString(), btcDominance]
+  );
 }
 
+// Fear & Greed
 export async function fetchAndSaveFearGreed() {
-  const { now } = await get('/insights/fear-and-greed');
+  const res = await axios.get(`${BASE}/fear-and-greed`, {
+    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
+  });
+  const { index } = res.data;
+  logger.info('Fetched Fear & Greed', { index });
   await query(
-    `INSERT INTO fear_greed(user_id, value, classification, timestamp)
-     VALUES (NULL, $1, $2, to_timestamp($3))`,
-    [now.value, now.value_classification, now.timestamp]
+    'INSERT INTO fear_greed(time, index) VALUES($1, $2)',
+    [new Date().toISOString(), index]
   );
 }
 
+// Métricas de mercado
 export async function fetchAndSaveMarkets() {
-  const { marketCap, volume, btcDominance } = await get('/markets');
-  await query(
-    `INSERT INTO coinstats_metrics(user_id, marketcap, volume, btc_dominance, timestamp)
-     VALUES (NULL, $1, $2, $3, now())`,
-    [marketCap, volume, btcDominance]
-  );
+  const res = await axios.get(`${BASE}/coins`, {
+    headers: { 'X-API-KEY': process.env.COINSTATS_API_KEY }
+  });
+  logger.info('Fetched markets', { count: res.data.coins.length });
+  // implementar gravação em coinstats_metrics conforme schema
 }

@@ -1,7 +1,14 @@
 // src/services/signalsService.js
+import logger from '../utils/logger.js';
 import { query } from './databaseService.js';
 
+/**
+ * Salva um sinal de trading.
+ * @param {number|null} userId
+ * @param {object} signal
+ */
 export async function saveSignal(userId, signal) {
+  logger.info('Saving signal', { userId, signal });
   const sql = `
     INSERT INTO signals(
       user_id, ticker, time, close, ema9, rsi4h, rsi15, momentum15,
